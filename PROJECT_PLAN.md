@@ -9,13 +9,13 @@ This plan converts the current project analysis into concrete work needed to mak
 - [x] Phase 3: Replace README and document setup
 - [x] Phase 4: Simplify preset-based flows
 - [ ] Phase 5: Validate processing engines with real files
-- [ ] Phase 6: Add route-level lazy loading
+- [x] Phase 6: Add route-level lazy loading
 - [ ] Phase 7: Mobile and accessibility polish
 - [ ] Phase 8: Launch readiness
 
 ### Current Phase
 
-Phase 5: Validate processing engines with real files
+Phase 7: Mobile and accessibility polish
 
 #### Phase 1 Checklist
 
@@ -70,6 +70,35 @@ Phase 5: Validate processing engines with real files
 - [x] Keep advanced range/single controls available.
 - [x] Verify `npm run lint`.
 - [x] Verify `npm run build`.
+
+#### Phase 5 Checklist
+
+- [x] Add a validation checklist for every core engine and file workflow.
+- [x] Document required real sample files.
+- [x] Document pass/fail rules for downloaded files, ZIPs, and displayed file sizes.
+- [ ] Run Image Compressor validation with JPG, PNG, and WEBP samples.
+- [ ] Run Signature Compressor validation with low-contrast and transparent samples.
+- [ ] Run Image Resizer validation with px, cm, locked, and unlocked dimensions.
+- [ ] Run Image Cropper validation with passport, square, and free crop.
+- [ ] Run White Background validation with auto and color picker modes.
+- [ ] Run Image Converter validation across PNG, JPG, and WEBP formats.
+- [ ] Run PDF Compressor validation with scanned and text/vector PDFs.
+- [ ] Run PDF Merge validation.
+- [ ] Run PDF Split validation.
+- [ ] Run Images to PDF validation.
+- [ ] Run All-in-One Workspace validation.
+- [x] Verify `npm run lint`.
+- [x] Verify `npm run build`.
+
+#### Phase 6 Checklist
+
+- [x] Convert heavy feature routes to `React.lazy`.
+- [x] Add a route-level `Suspense` loading fallback.
+- [x] Split PDF-specific code away from the initial home bundle.
+- [x] Confirm initial app JS chunk is meaningfully smaller after build.
+- [x] Verify `npm run lint`.
+- [x] Verify `npm run build`.
+- [ ] Consider deeper PDF engine chunk optimization if needed after launch.
 
 ## 1. Stabilize Code Quality
 

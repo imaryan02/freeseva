@@ -91,6 +91,7 @@ Important docs:
 
 - `freeSeva.md` contains the product requirements document.
 - `PROJECT_PLAN.md` tracks phased implementation work and progress.
+- `VALIDATION.md` contains manual test cases for processing engines and file workflows.
 
 ## Local Setup
 
@@ -173,9 +174,9 @@ The app currently uses `HashRouter`, which is friendly for static hosting becaus
 ## Known Follow-Up Work
 
 - Finish real-file validation for PDF compression behavior.
+- Run the full validation checklist in `VALIDATION.md` with local non-private sample files.
 - Clean remaining encoding artifacts in UI/docs.
 - Add route-level lazy loading for heavy PDF features.
 - Add mobile UX polish for dense batch workspaces.
 - Add smoke tests for important routes and file workflows.
 - Replace advanced controls with simpler presets where possible.
-
