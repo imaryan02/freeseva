@@ -77,12 +77,12 @@ export const AllInOneWorkspace: React.FC = () => {
       }
 
       // Default configs based on target category
-      let mode: 'compress' | 'resize' = 'compress';
+      const mode: 'compress' | 'resize' = 'compress';
       let minSizeKB = 20;
       let maxSizeKB = 50;
       let resizeWidth = 350;
       let resizeHeight = 450;
-      let resizeUnit: 'px' | 'cm' | 'inch' = 'px';
+      const resizeUnit: 'px' | 'cm' | 'inch' = 'px';
       let outputFormat: 'jpeg' | 'png' | 'pdf' = 'jpeg';
 
       if (targetType === 'document') {
@@ -169,6 +169,42 @@ export const AllInOneWorkspace: React.FC = () => {
         return item;
       })
     );
+  };
+
+  const applyStandardFormTargets = () => {
+    setQueue((prev) =>
+      prev.map((item) => {
+        if (item.targetType === 'signature') {
+          return {
+            ...item,
+            mode: 'compress',
+            sizeMode: 'range',
+            minSizeKB: 10,
+            maxSizeKB: 20,
+          };
+        }
+
+        if (item.targetType === 'document') {
+          return {
+            ...item,
+            mode: 'compress',
+            sizeMode: 'range',
+            minSizeKB: 100,
+            maxSizeKB: 200,
+          };
+        }
+
+        return {
+          ...item,
+          mode: 'compress',
+          sizeMode: 'range',
+          minSizeKB: 20,
+          maxSizeKB: 50,
+        };
+      })
+    );
+    setZipBlob(null);
+    setZipProgress('');
   };
 
   const removeItem = (id: string) => {
@@ -277,7 +313,7 @@ export const AllInOneWorkspace: React.FC = () => {
       }
 
       try {
-        const processedFile = await AllInOneEngine.processItem(currentItem, (_progress) => {
+        const processedFile = await AllInOneEngine.processItem(currentItem, () => {
           setResults((prev) => ({
             ...prev,
             [item.id]: {
@@ -302,14 +338,14 @@ export const AllInOneWorkspace: React.FC = () => {
         }));
 
         compiledFiles.push(processedFile);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(`Error processing ${item.file.name}:`, err);
         setResults((prev) => ({
           ...prev,
           [item.id]: {
             ...prev[item.id],
             status: 'failed',
-            error: err.message || 'Processing failed',
+            error: err instanceof Error ? err.message : 'Processing failed',
           },
         }));
       }
@@ -491,6 +527,23 @@ export const AllInOneWorkspace: React.FC = () => {
                   </div>
                 </div>
 
+                <div className="flex flex-wrap items-center gap-2 rounded-xl border border-brand-100 bg-brand-50/40 p-3 select-none">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-brand-800 mr-1">
+                    Quick Package
+                  </span>
+                  <button
+                    type="button"
+                    onClick={applyStandardFormTargets}
+                    disabled={isProcessing}
+                    className="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-brand-200 bg-white text-brand-800 hover:bg-brand-100 disabled:opacity-50"
+                  >
+                    Standard Form Targets
+                  </button>
+                  <span className="text-[10px] font-semibold text-navy-500">
+                    Photo 20-50KB, Signature 10-20KB, PDF 100-200KB
+                  </span>
+                </div>
+
                 {/* Queue list container with Horizontal Scroll fallback */}
                 <div className="w-full overflow-x-auto pb-2 scrollbar-thin">
                   <div className="flex flex-col gap-4 pr-1">
@@ -585,7 +638,7 @@ export const AllInOneWorkspace: React.FC = () => {
                               </label>
                               <select
                                 value={item.mode}
-                                onChange={(e) => updateItemSettings(item.id, { mode: e.target.value as any })}
+                                onChange={(e) => updateItemSettings(item.id, { mode: e.target.value as BatchItem['mode'] })}
                                 disabled={isProcessing || item.targetType === 'document'}
                                 className="w-full px-2 py-1 text-[11px] font-bold bg-white border border-navy-200 rounded-lg cursor-pointer disabled:bg-navy-100 disabled:text-navy-400 text-navy-800"
                               >
@@ -709,7 +762,7 @@ export const AllInOneWorkspace: React.FC = () => {
                                       />
                                       <select
                                         value={item.resizeUnit}
-                                        onChange={(e) => updateItemSettings(item.id, { resizeUnit: e.target.value as any })}
+                                        onChange={(e) => updateItemSettings(item.id, { resizeUnit: e.target.value as BatchItem['resizeUnit'] })}
                                         disabled={isProcessing}
                                         className="text-[10px] bg-transparent outline-none cursor-pointer text-navy-600 ml-1 font-semibold"
                                       >
@@ -745,7 +798,7 @@ export const AllInOneWorkspace: React.FC = () => {
                               </label>
                               <select
                                 value={item.outputFormat}
-                                onChange={(e) => updateItemSettings(item.id, { outputFormat: e.target.value as any })}
+                                onChange={(e) => updateItemSettings(item.id, { outputFormat: e.target.value as BatchItem['outputFormat'] })}
                                 disabled={isProcessing || item.targetType === 'document'}
                                 className="px-1.5 py-0.5 text-[10px] font-bold bg-white border border-navy-200 rounded cursor-pointer disabled:bg-navy-100 disabled:text-navy-400 text-navy-850 font-semibold"
                               >

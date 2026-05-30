@@ -36,6 +36,7 @@ export const ImageCropper: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [croppedUrl, setCroppedUrl] = useState<string | null>(null);
   const [croppedFile, setCroppedFile] = useState<File | null>(null);
+  const [croppedDimensions, setCroppedDimensions] = useState<{ width: number; height: number } | null>(null);
 
   const presets: CropPreset[] = [
     { name: 'Passport (3.5:4.5)', aspect: 7 / 9, desc: 'Ideal standard passport shape (3.5x4.5 cm)' },
@@ -67,6 +68,7 @@ export const ImageCropper: React.FC = () => {
       setSelectedFile(file);
       setCroppedUrl(null);
       setCroppedFile(null);
+      setCroppedDimensions(null);
 
       const reader = new FileReader();
       reader.onload = () => {
@@ -131,6 +133,7 @@ export const ImageCropper: React.FC = () => {
 
     canvas.width = Math.floor(completedCrop.width * scaleX);
     canvas.height = Math.floor(completedCrop.height * scaleY);
+    setCroppedDimensions({ width: canvas.width, height: canvas.height });
 
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
@@ -183,6 +186,7 @@ export const ImageCropper: React.FC = () => {
     setCompletedCrop(undefined);
     setCroppedUrl(null);
     setCroppedFile(null);
+    setCroppedDimensions(null);
     setAspect(7 / 9);
     setActivePreset('Passport (3.5:4.5)');
   };
@@ -329,7 +333,7 @@ export const ImageCropper: React.FC = () => {
                 <div className="flex justify-between font-semibold">
                   <span>Output Dimensions:</span>
                   <span className="font-bold text-navy-950">
-                    {completedCrop && `${Math.round(completedCrop.width * (imageRef.current ? imageRef.current.naturalWidth / imageRef.current.width : 1))} x ${Math.round(completedCrop.height * (imageRef.current ? imageRef.current.naturalHeight / imageRef.current.height : 1))} px`}
+                    {croppedDimensions ? `${croppedDimensions.width} x ${croppedDimensions.height} px` : 'Ready'}
                   </span>
                 </div>
                 <div className="flex justify-between font-semibold">

@@ -216,7 +216,7 @@ export const BackgroundWhite: React.FC = () => {
             previewUrl: cleanResult.previewUrl,
           }
         }));
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(err);
         setResults((prev) => ({
           ...prev,
@@ -225,14 +225,14 @@ export const BackgroundWhite: React.FC = () => {
             originalFile: activeItem.file,
             processedFile: null,
             status: 'failed',
-            error: err.message || 'Whitening failed',
+            error: err instanceof Error ? err.message : 'Whitening failed',
           }
         }));
       }
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [activeItem?.mode, activeItem?.tolerance, activeItem?.targetColor]);
+  }, [activeItem]);
 
   const executeBatch = async () => {
     if (queue.length === 0) return;
@@ -306,7 +306,7 @@ export const BackgroundWhite: React.FC = () => {
         }));
 
         compiledFiles.push(renamedFile);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error(`Whitening failed for ${item.customName}:`, error);
         setResults((prev) => ({
           ...prev,
@@ -315,7 +315,7 @@ export const BackgroundWhite: React.FC = () => {
             originalFile: item.file,
             processedFile: null,
             status: 'failed',
-            error: error.message || 'Whitening failed',
+            error: error instanceof Error ? error.message : 'Whitening failed',
           }
         }));
       }
@@ -331,9 +331,9 @@ export const BackgroundWhite: React.FC = () => {
         const content = await zip.generateAsync({ type: 'blob' });
         setZipBlob(content);
         setZipProgress('ZIP archive compiled successfully.');
-      } catch (zipErr: any) {
+      } catch (zipErr: unknown) {
         console.error('ZIP generation failed:', zipErr);
-        setZipProgress(`ZIP compilation error: ${zipErr.message || 'ZIP failed'}`);
+        setZipProgress(`ZIP compilation error: ${zipErr instanceof Error ? zipErr.message : 'ZIP failed'}`);
       }
     } else {
       setZipProgress('No files were successfully processed.');

@@ -128,6 +128,14 @@ export const SignatureCompressor: React.FC = () => {
     );
   };
 
+  const applyPresetToQueue = (
+    preset: Pick<SignatureBatchItem, 'sizeMode' | 'minSizeKB' | 'maxSizeKB'>
+  ) => {
+    setQueue((prev) => prev.map((item) => ({ ...item, ...preset })));
+    setZipBlob(null);
+    setZipProgress('');
+  };
+
   const removeItem = (id: string) => {
     setQueue((prev) => {
       const item = prev.find((i) => i.id === id);
@@ -281,7 +289,7 @@ export const SignatureCompressor: React.FC = () => {
         }));
 
         compiledFiles.push(finalFile);
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error(`Signature processing failed for ${item.customName}:`, error);
         setResults((prev) => ({
           ...prev,
@@ -290,7 +298,7 @@ export const SignatureCompressor: React.FC = () => {
             originalFile: item.file,
             processedFile: null,
             status: 'failed',
-            error: error.message || 'Processing failed',
+            error: error instanceof Error ? error.message : 'Processing failed',
           },
         }));
       }
@@ -306,9 +314,9 @@ export const SignatureCompressor: React.FC = () => {
         const content = await zip.generateAsync({ type: 'blob' });
         setZipBlob(content);
         setZipProgress('ZIP archive compiled successfully.');
-      } catch (zipErr: any) {
+      } catch (zipErr: unknown) {
         console.error('ZIP generation failed:', zipErr);
-        setZipProgress(`ZIP compilation error: ${zipErr.message || 'ZIP failed'}`);
+        setZipProgress(`ZIP compilation error: ${zipErr instanceof Error ? zipErr.message : 'ZIP failed'}`);
       }
     } else {
       setZipProgress('No files were successfully processed to bundle.');
@@ -427,6 +435,36 @@ export const SignatureCompressor: React.FC = () => {
                     <UploadCloud className="h-3.5 w-3.5 text-navy-500" /> + Add Signature
                   </button>
                 </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-brand-100 bg-brand-50/40 p-3 select-none">
+                <span className="text-[10px] font-black uppercase tracking-wider text-brand-800 mr-1">
+                  Quick Targets
+                </span>
+                <button
+                  type="button"
+                  onClick={() => applyPresetToQueue({ sizeMode: 'range', minSizeKB: 10, maxSizeKB: 20 })}
+                  disabled={isProcessing}
+                  className="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-brand-200 bg-white text-brand-800 hover:bg-brand-100 disabled:opacity-50"
+                >
+                  Signature 10-20KB
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyPresetToQueue({ sizeMode: 'single', minSizeKB: 0, maxSizeKB: 10 })}
+                  disabled={isProcessing}
+                  className="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-brand-200 bg-white text-brand-800 hover:bg-brand-100 disabled:opacity-50"
+                >
+                  Under 10KB
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyPresetToQueue({ sizeMode: 'single', minSizeKB: 0, maxSizeKB: 20 })}
+                  disabled={isProcessing}
+                  className="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-brand-200 bg-white text-brand-800 hover:bg-brand-100 disabled:opacity-50"
+                >
+                  Under 20KB
+                </button>
               </div>
 
               {/* Grid Rows Container with Horizontal Scroll fallback */}

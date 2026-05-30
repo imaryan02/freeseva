@@ -66,8 +66,7 @@ export class AllInOneEngine {
       customName 
     } = item;
 
-    let processedBlob: Blob | null = null;
-    let finalFile: File | null = null;
+    let finalFile: File;
 
     if (onProgress) onProgress(10);
 
@@ -98,7 +97,7 @@ export class AllInOneEngine {
 
       if (onProgress) onProgress(30);
       const resizeResult = await ImageResizeEngine.resize(file, options);
-      processedBlob = resizeResult.file;
+      let processedBlob: Blob = resizeResult.file;
 
       if (outputFormat === 'pdf') {
         // If they want PDF output after resizing, compile it
@@ -114,20 +113,19 @@ export class AllInOneEngine {
 
     } else {
       // 2. Compression target path
-      let targetKB = maxSizeKB;
-      if (minSizeKB > 0 && maxSizeKB > minSizeKB) {
-        targetKB = minSizeKB + (maxSizeKB - minSizeKB) * 0.8; // Target 80% up the range
-      } else {
-        targetKB = maxSizeKB * 0.9;
-      }
-      targetKB = Math.max(5, targetKB); // Clamp to at least 5KB
+      const targetKB = Math.max(
+        5,
+        minSizeKB > 0 && maxSizeKB > minSizeKB
+          ? minSizeKB + (maxSizeKB - minSizeKB) * 0.8
+          : maxSizeKB * 0.9
+      );
 
       if (targetType === 'photo' || targetType === 'generic') {
         const mime = outputFormat === 'png' ? 'image/png' : 'image/jpeg';
         const result = await ImageCompressionEngine.compress(file, targetKB, (p) => {
           if (onProgress) onProgress(10 + Math.round(p * 0.7));
         });
-        processedBlob = result.file;
+        const processedBlob = result.file;
         finalFile = new File([processedBlob], finalName, { type: mime });
 
       } else if (targetType === 'signature') {
@@ -141,16 +139,16 @@ export class AllInOneEngine {
         const result = await SignatureCompressionEngine.processAndCompress(file, targetKB, options, (p) => {
           if (onProgress) onProgress(10 + Math.round(p * 0.7));
         });
-        processedBlob = result.file;
+        const processedBlob = result.file;
         finalFile = new File([processedBlob], finalName, { type: processedBlob.type });
 
       } else if (targetType === 'document') {
         // Always use the smart pipeline: structural optimization first, rasterization fallback
         const result = await PdfProcessingEngine.compress(file, 'low', (p) => {
           if (onProgress) onProgress(10 + Math.round(p * 0.7));
-        }, true, maxSizeKB);
+        }, true, maxSizeKB, item.sizeMode === 'range' ? minSizeKB : 0);
 
-        processedBlob = result.file;
+        const processedBlob = result.file;
         finalFile = new File([processedBlob], finalName, { type: 'application/pdf' });
       } else {
         throw new Error(`Unsupported target type: ${targetType}`);
@@ -159,7 +157,7 @@ export class AllInOneEngine {
       if (onProgress) onProgress(85);
 
       // Handle boundary check - Pad if below minimum limit
-      if (minSizeKB > 0 && finalFile.size < minSizeKB * 1024) {
+      if (targetType !== 'document' && minSizeKB > 0 && finalFile.size < minSizeKB * 1024) {
         const paddedBlob = this.padBlob(finalFile, minSizeKB);
         finalFile = new File([paddedBlob], finalFile.name, { type: finalFile.type });
       }

@@ -22,6 +22,11 @@ export interface ImagesToPdfOptions {
 }
 
 export class PdfProcessingEngine {
+  private static bytesToFile(bytes: Uint8Array, name: string, type: string): File {
+    const copy = new Uint8Array(bytes);
+    return new File([copy.buffer], name, { type });
+  }
+
   /**
    * Reads basic PDF metadata (number of pages, original file size)
    */
@@ -81,7 +86,8 @@ export class PdfProcessingEngine {
     level: 'low' | 'medium' | 'high',
     onProgress?: (progress: number) => void,
     useMonochrome: boolean = false,
-    targetSizeKB: number = 0
+    targetSizeKB: number = 0,
+    preferredMinSizeKB: number = 0
   ): Promise<PdfProcessingResult> {
     const arrayBuffer = await file.arrayBuffer();
     const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
@@ -91,7 +97,7 @@ export class PdfProcessingEngine {
     // Phase 1 tries Adobe-style lossless optimization (keeps text as vector).
     // Phase 2 falls back to rasterization only if structural optimization isn't enough.
     if (useMonochrome && targetSizeKB > 0) {
-      return this.compressMonochromeIterative(file, pdfDoc, pagesCount, targetSizeKB, onProgress);
+      return this.compressMonochromeIterative(file, pdfDoc, pagesCount, targetSizeKB, preferredMinSizeKB, onProgress);
     }
  
     // --- Standard rasterization path ---
@@ -150,9 +156,7 @@ export class PdfProcessingEngine {
     const resultPdfBytes = await resultPdf.save();
     
     const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-    const compressedFile = new File([resultPdfBytes as any], `${baseName}_compressed.pdf`, {
-      type: 'application/pdf',
-    });
+    const compressedFile = this.bytesToFile(resultPdfBytes, `${baseName}_compressed.pdf`, 'application/pdf');
 
     // Anti-ballooning safeguard: if rasterization made it bigger, return original
     if (compressedFile.size > file.size) {
@@ -203,15 +207,49 @@ export class PdfProcessingEngine {
     pdfDoc: pdfjsLib.PDFDocumentProxy,
     pagesCount: number,
     targetSizeKB: number,
+    preferredMinSizeKB: number = 0,
     onProgress?: (progress: number) => void,
   ): Promise<PdfProcessingResult> {
     const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
     const targetBytes = targetSizeKB * 1024;
+    const preferredMinBytes = Math.max(0, preferredMinSizeKB * 1024);
+    const qualityFloorBytes = preferredMinBytes > 0 ? preferredMinBytes : targetBytes * 0.6;
+
+    interface PdfCandidate {
+      bytes: Uint8Array;
+      size: number;
+      scale: number;
+      quality: number;
+    }
+
+    const buildResult = (outputFile: File): PdfProcessingResult => {
+      const savingsPercentage = Math.max(
+        0,
+        Math.round(((file.size - outputFile.size) / file.size) * 100)
+      );
+
+      return {
+        file: outputFile,
+        originalSize: file.size,
+        compressedSize: outputFile.size,
+        savingsPercentage,
+        previewUrl: URL.createObjectURL(outputFile),
+      };
+    };
+
+    const scoreCandidate = (candidate: PdfCandidate): number => {
+      const scaleScore = Math.min(candidate.scale, 1.5) / 1.5;
+      const sizeScore = Math.min(candidate.size / targetBytes, 1);
+      const underFilledPenalty = candidate.size < qualityFloorBytes ? 0.2 : 0;
+
+      return candidate.quality * 0.55 + scaleScore * 0.35 + sizeScore * 0.1 - underFilledPenalty;
+    };
 
     // ═══════════════════════════════════════════════════════════
     // PHASE 1: Structural Optimization (Adobe-style, lossless)
     // ═══════════════════════════════════════════════════════════
     if (onProgress) onProgress(5);
+    let structurallyOptimizedFile: File | null = null;
 
     try {
       const arrayBuffer = await file.arrayBuffer();
@@ -235,35 +273,18 @@ export class PdfProcessingEngine {
 
       // Save the structurally optimized PDF
       const cleanBytes = await cleanDoc.save();
-      const cleanFile = new File([cleanBytes as any], `${baseName}_compressed.pdf`, {
-        type: 'application/pdf',
-      });
+      const cleanFile = this.bytesToFile(cleanBytes, `${baseName}_compressed.pdf`, 'application/pdf');
 
       if (onProgress) onProgress(40);
 
       // Check if structural optimization alone hits the target
       if (cleanFile.size <= targetBytes) {
         if (onProgress) onProgress(100);
-
-        const savingsPercentage = Math.max(
-          0,
-          Math.round(((file.size - cleanFile.size) / file.size) * 100)
-        );
-
-        return {
-          file: cleanFile,
-          originalSize: file.size,
-          compressedSize: cleanFile.size,
-          savingsPercentage,
-          previewUrl: URL.createObjectURL(cleanFile),
-        };
+        return buildResult(cleanFile);
       }
 
-      // If structural optimization got us closer but not there yet, 
-      // check if it's at least smaller than original
       if (cleanFile.size < file.size) {
-        // Use the structurally optimized version as our best so far
-        // but continue to Phase 2 to try to hit the exact target
+        structurallyOptimizedFile = cleanFile;
       }
     } catch (err) {
       console.warn('Structural optimization failed, falling back to rasterization:', err);
@@ -274,10 +295,12 @@ export class PdfProcessingEngine {
     // ═══════════════════════════════════════════════════════════
     // PHASE 2: Rasterization Fallback (only if Phase 1 wasn't enough)
     // ═══════════════════════════════════════════════════════════
-    const scaleTiers = [1.5, 1.0, 0.75, 0.5];
-    const qualitySteps = [0.82, 0.7, 0.58, 0.46, 0.35, 0.25, 0.15, 0.10];
+    const scaleTiers = [1.75, 1.5, 1.35, 1.2, 1.0, 0.85, 0.75, 0.65, 0.5];
+    const qualitySteps = [0.95, 0.9, 0.86, 0.82, 0.78, 0.74, 0.7, 0.66, 0.62, 0.58, 0.54, 0.5, 0.46, 0.42, 0.38, 0.34, 0.3, 0.25, 0.2, 0.15, 0.1];
     const totalRounds = scaleTiers.length;
     let bestPdfBytes: Uint8Array | null = null;
+    let bestUnderTargetCandidate: PdfCandidate | null = null;
+    let bestWithinRangeCandidate: PdfCandidate | null = null;
 
     for (let si = 0; si < scaleTiers.length; si++) {
       const renderScale = scaleTiers[si];
@@ -344,52 +367,49 @@ export class PdfProcessingEngine {
         bestPdfBytes = pdfBytes as Uint8Array;
 
         if (pdfBytes.byteLength <= targetBytes) {
-          if (onProgress) onProgress(95);
-
-          const compressedFile = new File([bestPdfBytes as any], `${baseName}_compressed.pdf`, {
-            type: 'application/pdf',
-          });
-
-          if (onProgress) onProgress(100);
-
-          const savingsPercentage = Math.max(
-            0,
-            Math.round(((file.size - compressedFile.size) / file.size) * 100)
-          );
-
-          return {
-            file: compressedFile,
-            originalSize: file.size,
-            compressedSize: compressedFile.size,
-            savingsPercentage,
-            previewUrl: URL.createObjectURL(compressedFile),
+          const candidate: PdfCandidate = {
+            bytes: pdfBytes as Uint8Array,
+            size: pdfBytes.byteLength,
+            scale: renderScale,
+            quality,
           };
+
+          if (
+            !bestUnderTargetCandidate ||
+            scoreCandidate(candidate) > scoreCandidate(bestUnderTargetCandidate)
+          ) {
+            bestUnderTargetCandidate = candidate;
+          }
+
+          if (
+            preferredMinBytes > 0 &&
+            pdfBytes.byteLength >= preferredMinBytes &&
+            (!bestWithinRangeCandidate ||
+              scoreCandidate(candidate) > scoreCandidate(bestWithinRangeCandidate))
+          ) {
+            bestWithinRangeCandidate = candidate;
+          }
         }
       }
     }
 
-    if (onProgress) onProgress(92);
+    if (onProgress) onProgress(95);
 
-    // Use the smallest rasterized result
-    const finalBytes = bestPdfBytes!;
-    const compressedFile = new File([finalBytes as any], `${baseName}_compressed.pdf`, {
-      type: 'application/pdf',
-    });
+    const finalCandidate = bestWithinRangeCandidate || bestUnderTargetCandidate;
+
+    if (!finalCandidate && structurallyOptimizedFile) {
+      if (onProgress) onProgress(100);
+      return buildResult(structurallyOptimizedFile);
+    }
+
+    // Prefer the best quality candidate inside the user's range. If none exists,
+    // use the best quality candidate under max. Only fall back to the last
+    // rasterized result when no under-target candidate was possible.
+    const finalBytes = finalCandidate?.bytes || bestPdfBytes!;
+    const compressedFile = this.bytesToFile(finalBytes, `${baseName}_compressed.pdf`, 'application/pdf');
 
     if (onProgress) onProgress(100);
-
-    const savingsPercentage = Math.max(
-      0,
-      Math.round(((file.size - compressedFile.size) / file.size) * 100)
-    );
-
-    return {
-      file: compressedFile,
-      originalSize: file.size,
-      compressedSize: compressedFile.size,
-      savingsPercentage,
-      previewUrl: URL.createObjectURL(compressedFile),
-    };
+    return buildResult(compressedFile);
   }
 
   /**
@@ -423,9 +443,7 @@ export class PdfProcessingEngine {
     if (onProgress) onProgress(95);
 
     const mergedBytes = await mergedPdf.save();
-    const finalFile = new File([mergedBytes as any], 'merged_documents.pdf', {
-      type: 'application/pdf',
-    });
+    const finalFile = this.bytesToFile(mergedBytes, 'merged_documents.pdf', 'application/pdf');
 
     if (onProgress) onProgress(100);
     return finalFile;
@@ -457,9 +475,7 @@ export class PdfProcessingEngine {
 
     const splitBytes = await splitDoc.save();
     const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-    const finalFile = new File([splitBytes as any], `${baseName}_split.pdf`, {
-      type: 'application/pdf',
-    });
+    const finalFile = this.bytesToFile(splitBytes, `${baseName}_split.pdf`, 'application/pdf');
 
     if (onProgress) onProgress(100);
     return finalFile;
@@ -491,7 +507,7 @@ export class PdfProcessingEngine {
         embedImg = await pdfDoc.embedJpg(imgBuffer);
       }
 
-      let { width, height } = embedImg.scale(1.0);
+      const { width, height } = embedImg.scale(1.0);
 
       // Define standard layout constraints (A4 points: 595.27 x 841.89, Letter points: 612 x 792)
       let pageWidth = width;
@@ -533,9 +549,7 @@ export class PdfProcessingEngine {
     if (onProgress) onProgress(90);
 
     const pdfBytes = await pdfDoc.save();
-    const finalFile = new File([pdfBytes as any], 'images_compiled.pdf', {
-      type: 'application/pdf',
-    });
+    const finalFile = this.bytesToFile(pdfBytes, 'images_compiled.pdf', 'application/pdf');
 
     if (onProgress) onProgress(100);
     return finalFile;

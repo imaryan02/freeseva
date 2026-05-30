@@ -64,16 +64,6 @@ export const PdfCompressor: React.FC = () => {
     return name.replace(/[\\/:*?"<>|]/g, '_');
   };
 
-  const padBlob = (blob: Blob, minKB: number): Blob => {
-    const minBytes = minKB * 1024;
-    if (blob.size >= minBytes) {
-      return blob;
-    }
-    const paddingSize = minBytes - blob.size;
-    const padding = new Uint8Array(paddingSize);
-    return new Blob([blob, padding], { type: blob.type });
-  };
-
   const handleUploadTrigger = () => {
     if (hiddenInputRef.current) {
       hiddenInputRef.current.value = ''; // Reset input to ensure trigger fires
@@ -100,7 +90,7 @@ export const PdfCompressor: React.FC = () => {
         id: Math.random().toString(36).substring(2, 9),
         file,
         customName: cleanName,
-        compressionStrategy: 'preset',
+        compressionStrategy: 'custom',
         compressionLevel: 'medium',
         sizeMode: 'range',
         minSizeKB: 50,
@@ -123,6 +113,14 @@ export const PdfCompressor: React.FC = () => {
         return item;
       })
     );
+  };
+
+  const applyPresetToQueue = (
+    preset: Pick<PdfBatchItem, 'sizeMode' | 'minSizeKB' | 'maxSizeKB'>
+  ) => {
+    setQueue((prev) => prev.map((item) => ({ ...item, ...preset, compressionStrategy: 'custom' })));
+    setZipBlob(null);
+    setZipProgress('');
   };
 
   const removeItem = (id: string) => {
@@ -231,7 +229,9 @@ export const PdfCompressor: React.FC = () => {
             currentItem.file,
             currentItem.compressionLevel,
             undefined,
-            true
+            true,
+            currentItem.maxSizeKB,
+            currentItem.sizeMode === 'range' ? currentItem.minSizeKB : 0
           );
         } else {
           compressionResult = await PdfProcessingEngine.compress(
@@ -239,19 +239,12 @@ export const PdfCompressor: React.FC = () => {
             'low',
             undefined,
             true,
-            currentItem.maxSizeKB
+            currentItem.maxSizeKB,
+            currentItem.sizeMode === 'range' ? currentItem.minSizeKB : 0
           );
         }
 
-        let finalFile = compressionResult.file;
-
-        // Apply padding if needed
-        if (currentItem.compressionStrategy === 'custom' && currentItem.sizeMode === 'range' && currentItem.minSizeKB > 0 && finalFile.size < currentItem.minSizeKB * 1024) {
-          const paddedBlob = padBlob(finalFile, currentItem.minSizeKB);
-          finalFile = new File([paddedBlob], finalName, { type: 'application/pdf' });
-        } else {
-          finalFile = new File([finalFile], finalName, { type: 'application/pdf' });
-        }
+        const finalFile = new File([compressionResult.file], finalName, { type: 'application/pdf' });
 
         const savingsPercentage = Math.max(
           0,
@@ -269,14 +262,14 @@ export const PdfCompressor: React.FC = () => {
         }));
 
         compiledFiles.push(finalFile);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(`Error processing ${item.file.name}:`, err);
         setResults((prev) => ({
           ...prev,
           [item.id]: {
             ...prev[item.id],
             status: 'failed',
-            error: err.message || 'Compression failed',
+            error: err instanceof Error ? err.message : 'Compression failed',
           },
         }));
       }
@@ -431,6 +424,36 @@ export const PdfCompressor: React.FC = () => {
                       <UploadCloud className="h-3.5 w-3.5 text-navy-500" /> + Add PDF
                     </button>
                   </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 rounded-xl border border-brand-100 bg-brand-50/40 p-3 select-none">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-brand-800 mr-1">
+                    Quick Targets
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => applyPresetToQueue({ sizeMode: 'single', minSizeKB: 0, maxSizeKB: 100 })}
+                    disabled={isProcessing}
+                    className="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-brand-200 bg-white text-brand-800 hover:bg-brand-100 disabled:opacity-50"
+                  >
+                    Under 100KB
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPresetToQueue({ sizeMode: 'range', minSizeKB: 100, maxSizeKB: 200 })}
+                    disabled={isProcessing}
+                    className="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-brand-200 bg-white text-brand-800 hover:bg-brand-100 disabled:opacity-50"
+                  >
+                    100-200KB
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPresetToQueue({ sizeMode: 'single', minSizeKB: 0, maxSizeKB: 300 })}
+                    disabled={isProcessing}
+                    className="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-brand-200 bg-white text-brand-800 hover:bg-brand-100 disabled:opacity-50"
+                  >
+                    Under 300KB
+                  </button>
                 </div>
 
                 {/* Grid Rows Container with Horizontal Scroll fallback */}

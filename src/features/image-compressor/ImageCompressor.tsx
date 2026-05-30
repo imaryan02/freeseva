@@ -121,6 +121,14 @@ export const ImageCompressor: React.FC = () => {
     );
   };
 
+  const applyPresetToQueue = (
+    preset: Pick<ImageBatchItem, 'sizeMode' | 'minSizeKB' | 'maxSizeKB'>
+  ) => {
+    setQueue((prev) => prev.map((item) => ({ ...item, ...preset })));
+    setZipBlob(null);
+    setZipProgress('');
+  };
+
   const removeItem = (id: string) => {
     setQueue((prev) => {
       const item = prev.find((i) => i.id === id);
@@ -263,14 +271,14 @@ export const ImageCompressor: React.FC = () => {
         }));
 
         compiledFiles.push(finalFile);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(`Error processing ${item.file.name}:`, err);
         setResults((prev) => ({
           ...prev,
           [item.id]: {
             ...prev[item.id],
             status: 'failed',
-            error: err.message || 'Compression failed',
+            error: err instanceof Error ? err.message : 'Compression failed',
           },
         }));
       }
@@ -425,6 +433,36 @@ export const ImageCompressor: React.FC = () => {
                       <UploadCloud className="h-3.5 w-3.5 text-navy-500" /> + Add Image
                     </button>
                   </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 rounded-xl border border-brand-100 bg-brand-50/40 p-3 select-none">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-brand-800 mr-1">
+                    Quick Targets
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => applyPresetToQueue({ sizeMode: 'range', minSizeKB: 20, maxSizeKB: 50 })}
+                    disabled={isProcessing}
+                    className="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-brand-200 bg-white text-brand-800 hover:bg-brand-100 disabled:opacity-50"
+                  >
+                    Photo 20-50KB
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPresetToQueue({ sizeMode: 'single', minSizeKB: 0, maxSizeKB: 100 })}
+                    disabled={isProcessing}
+                    className="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-brand-200 bg-white text-brand-800 hover:bg-brand-100 disabled:opacity-50"
+                  >
+                    Under 100KB
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => applyPresetToQueue({ sizeMode: 'single', minSizeKB: 0, maxSizeKB: 200 })}
+                    disabled={isProcessing}
+                    className="px-2.5 py-1 text-[10px] font-bold rounded-lg border border-brand-200 bg-white text-brand-800 hover:bg-brand-100 disabled:opacity-50"
+                  >
+                    Under 200KB
+                  </button>
                 </div>
 
               {/* Grid Rows Container with Horizontal Scroll fallback */}
@@ -597,7 +635,7 @@ export const ImageCompressor: React.FC = () => {
                             </label>
                             <select
                               value={item.outputFormat}
-                              onChange={(e) => updateItemSettings(item.id, { outputFormat: e.target.value as any })}
+                              onChange={(e) => updateItemSettings(item.id, { outputFormat: e.target.value as ImageBatchItem['outputFormat'] })}
                               disabled={isProcessing}
                               className="w-full px-2 py-1 text-[11px] font-bold bg-white border border-navy-200 rounded-lg cursor-pointer text-navy-850 font-semibold"
                             >

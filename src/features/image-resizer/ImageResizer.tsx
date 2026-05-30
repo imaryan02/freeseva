@@ -345,14 +345,14 @@ export const ImageResizer: React.FC = () => {
         }));
 
         compiledFiles.push(finalFile);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(`Error resizing ${item.file.name}:`, err);
         setResults((prev) => ({
           ...prev,
           [item.id]: {
             ...prev[item.id],
             status: 'failed',
-            error: err.message || 'Resizing failed',
+            error: err instanceof Error ? err.message : 'Resizing failed',
           },
         }));
       }
@@ -579,7 +579,7 @@ export const ImageResizer: React.FC = () => {
                             </label>
                             <select
                               value={item.operationMode}
-                              onChange={(e) => updateItemSettings(item.id, { operationMode: e.target.value as any })}
+                              onChange={(e) => updateItemSettings(item.id, { operationMode: e.target.value as ResizerBatchItem['operationMode'] })}
                               disabled={isProcessing}
                               className="w-full px-2 py-1 text-[11px] font-bold bg-white border border-navy-200 rounded-lg cursor-pointer text-navy-800"
                             >
@@ -743,7 +743,7 @@ export const ImageResizer: React.FC = () => {
                             </label>
                             <select
                               value={item.outputFormat}
-                              onChange={(e) => updateItemSettings(item.id, { outputFormat: e.target.value as any })}
+                              onChange={(e) => updateItemSettings(item.id, { outputFormat: e.target.value as ResizerBatchItem['outputFormat'] })}
                               disabled={isProcessing}
                               className="w-full px-2 py-1 text-[11px] font-bold bg-white border border-navy-200 rounded-lg cursor-pointer text-navy-850 font-semibold"
                             >

@@ -21,7 +21,8 @@ export const Select: React.FC<SelectProps> = ({
   id,
   ...props
 }) => {
-  const selectId = id || `select-${Math.random().toString(36).substr(2, 9)}`;
+  const generatedId = React.useId();
+  const selectId = id || generatedId;
 
   return (
     <div className="w-full">
