@@ -491,324 +491,325 @@ export const AllInOneWorkspace: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Queue list container */}
-                <div className="flex flex-col gap-4">
-                  {queue.map((item) => {
-                    const result = results[item.id];
-                    return (
-                      <div
-                        key={item.id}
-                        className="flex flex-col xl:flex-row xl:items-center justify-between p-4 bg-navy-50/70 border border-navy-200 rounded-xl hover:bg-navy-50 transition-all gap-4"
-                      >
-                        {/* 1. First Block: display visual thumbnail small icon type */}
-                        <div className="flex items-center gap-3 min-w-[200px]">
-                          <div className="w-12 h-12 rounded-lg bg-navy-200 flex-shrink-0 overflow-hidden border border-navy-300 flex items-center justify-center shadow-sm relative">
-                            {item.previewUrl ? (
-                              <img
-                                src={item.previewUrl}
-                                alt="preview"
-                                className="w-full h-full object-cover"
-                              />
-                            ) : item.file.type.includes('pdf') ? (
-                              <FileText className="h-5 w-5 text-navy-500" />
-                            ) : (
-                              <ImageIcon className="h-5 w-5 text-navy-500" />
-                            )}
-                            <span className="absolute bottom-0 inset-x-0 bg-black/60 text-[8px] text-white text-center py-0.2 select-none" title={`Original file size: ${formatBytes(item.file.size)}`}>
-                              {formatBytes(item.file.size)}
-                            </span>
-                          </div>
-
-                          {/* Editable Name option to rewrite existing names */}
-                          <div className="flex-1 flex flex-col gap-0.5">
-                            <span className="text-[9px] uppercase tracking-wider font-bold text-navy-400 select-none flex items-center gap-0.5">
-                              <FileEdit className="h-2.5 w-2.5" /> Output File Name
-                            </span>
-                            <input
-                              type="text"
-                              value={item.customName}
-                              onChange={(e) => updateItemSettings(item.id, { customName: sanitizeFileName(e.target.value) })}
-                              disabled={isProcessing}
-                              className="px-2 py-1 text-xs border border-navy-200 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 font-bold text-navy-800 bg-white max-w-[170px]"
-                              placeholder="Rename file..."
-                            />
-                            {/* Visual Current Size Indicator under editable name block */}
-                            <div className="text-[10px] text-navy-500 mt-1 font-semibold flex flex-wrap items-center gap-1.5 select-none">
-                              <span>Orig: <strong className="text-navy-850">{formatBytes(item.file.size)}</strong></span>
-                              {result?.processedFile && result.status === 'completed' && (
-                                <>
-                                  <span className="text-navy-300 font-normal">•</span>
-                                  <span className="text-brand-700 bg-brand-50 border border-brand-100 rounded px-1 flex items-center gap-0.5">
-                                    Current: <strong className="font-extrabold">{formatBytes(result.processedFile.size)}</strong>
-                                  </span>
-                                  {result.processedFile.size >= item.file.size && (item.file.type.includes('pdf') || item.file.name.toLowerCase().endsWith('.pdf')) && (
-                                    <span className="text-[9px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1 font-extrabold" title="This text-based PDF is already highly optimized. Further compression would inflate its size, so the original was kept for best quality and size.">
-                                      Original Kept
-                                    </span>
-                                  )}
-                                </>
+                {/* Queue list container with Horizontal Scroll fallback */}
+                <div className="w-full overflow-x-auto pb-2 scrollbar-thin">
+                  <div className="flex flex-col gap-4 pr-1">
+                    {queue.map((item) => {
+                      const result = results[item.id];
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex flex-col xl:flex-row xl:items-center justify-between p-4 bg-navy-50/70 border border-navy-200 rounded-xl hover:bg-navy-50 transition-all gap-4 w-full xl:min-w-max animate-fadeIn"
+                        >
+                          {/* Left Group: Thumbnail + Output Name Name (Keeps side-by-side even on mobile) */}
+                          <div className="flex items-center gap-3.5 w-full xl:w-auto">
+                            <div className="w-12 h-12 rounded-lg bg-navy-200 flex-shrink-0 overflow-hidden border border-navy-300 flex items-center justify-center shadow-sm relative">
+                              {item.previewUrl ? (
+                                <img
+                                  src={item.previewUrl}
+                                  alt="preview"
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : item.file.type.includes('pdf') ? (
+                                <FileText className="h-5 w-5 text-navy-500" />
+                              ) : (
+                                <ImageIcon className="h-5 w-5 text-navy-500" />
                               )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Middle Settings Area */}
-                        <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-4 items-end">
-                          
-                          {/* File Type auto detected */}
-                          <div>
-                            <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5 select-none">
-                              File Type (Auto)
-                            </label>
-                            <div className="flex items-center">
-                              <span className={`px-2.5 py-1.5 text-[11px] font-extrabold uppercase rounded-lg border tracking-wide select-none ${
-                                item.file.type.includes('pdf') || item.file.name.endsWith('.pdf')
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                  : item.file.type.includes('png') || item.file.name.endsWith('.png')
-                                  ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
-                                  : item.file.type.includes('webp') || item.file.name.endsWith('.webp')
-                                  ? 'bg-purple-50 text-purple-700 border-purple-200'
-                                  : 'bg-sky-50 text-sky-700 border-sky-200'
-                              }`}>
-                                {item.file.type.includes('pdf') || item.file.name.endsWith('.pdf') ? 'PDF Document' :
-                                 item.file.type.includes('png') || item.file.name.endsWith('.png') ? 'PNG Image' :
-                                 item.file.type.includes('webp') || item.file.name.endsWith('.webp') ? 'WEBP Image' : 'JPG Image'}
+                              <span className="absolute bottom-0 inset-x-0 bg-black/60 text-[8px] text-white text-center py-0.2 select-none" title={`Original file size: ${formatBytes(item.file.size)}`}>
+                                {formatBytes(item.file.size)}
                               </span>
                             </div>
+
+                            {/* Editable Name option to rewrite existing names */}
+                            <div className="flex-grow xl:flex-grow-0 flex flex-col gap-0.5 min-w-[130px] xl:min-w-[150px]">
+                              <span className="text-[9px] uppercase tracking-wider font-bold text-navy-450 select-none flex items-center gap-0.5">
+                                <FileEdit className="h-2.5 w-2.5" /> Output File Name
+                              </span>
+                              <input
+                                type="text"
+                                value={item.customName}
+                                onChange={(e) => updateItemSettings(item.id, { customName: sanitizeFileName(e.target.value) })}
+                                disabled={isProcessing}
+                                className="px-2 py-1 text-xs border border-navy-200 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 font-bold text-navy-800 bg-white w-full max-w-[140px]"
+                                placeholder="Rename file..."
+                              />
+                              {/* Visual Current Size Indicator under editable name block */}
+                              <div className="text-[10px] text-navy-500 mt-1 font-semibold flex flex-wrap items-center gap-1.5 select-none">
+                                <span>Orig: <strong className="text-navy-850">{formatBytes(item.file.size)}</strong></span>
+                                {result?.processedFile && result.status === 'completed' && (
+                                  <>
+                                    <span className="text-navy-300 font-normal">•</span>
+                                    <span className="text-brand-700 bg-brand-50 border border-brand-100 rounded px-1 flex items-center gap-0.5 animate-fadeIn">
+                                      Current: <strong className="font-extrabold">{formatBytes(result.processedFile.size)}</strong>
+                                    </span>
+                                    {result.processedFile.size >= item.file.size && (item.file.type.includes('pdf') || item.file.name.toLowerCase().endsWith('.pdf')) && (
+                                      <span className="text-[9px] text-amber-700 bg-amber-50 border border-amber-200 rounded px-1 font-extrabold" title="This text-based PDF is already highly optimized. Further compression would inflate its size, so the original was kept for best quality and size.">
+                                        Original Kept
+                                      </span>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                            </div>
                           </div>
 
-                          {/* Operation select: compress or resize */}
-                          <div>
-                            <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1">
-                              Operation Mode
-                            </label>
-                            <select
-                              value={item.mode}
-                              onChange={(e) => updateItemSettings(item.id, { mode: e.target.value as any })}
-                              disabled={isProcessing || item.targetType === 'document'}
-                              className="w-full px-2 py-1 text-[11px] font-bold bg-white border border-navy-200 rounded-lg cursor-pointer disabled:bg-navy-100 disabled:text-navy-400"
-                            >
-                              <option value="compress">Compress to size</option>
-                              <option value="resize">Resize dimensions</option>
-                            </select>
-                          </div>
+                          {/* Middle Group: Settings (Stacked grid on mobile, horizontal columns on desktop) */}
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full xl:flex xl:flex-row xl:items-center xl:justify-between xl:w-auto xl:gap-6 flex-1 border-t xl:border-t-0 border-navy-100/70 pt-3 xl:pt-0">
+                            
+                            {/* File Type auto detected */}
+                            <div>
+                              <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5 select-none">
+                                File Type (Auto)
+                              </label>
+                              <div className="flex items-center">
+                                <span className={`px-2.5 py-1.5 text-[11px] font-extrabold uppercase rounded-lg border tracking-wide select-none ${
+                                  item.file.type.includes('pdf') || item.file.name.endsWith('.pdf')
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                    : item.file.type.includes('png') || item.file.name.endsWith('.png')
+                                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                                    : item.file.type.includes('webp') || item.file.name.endsWith('.webp')
+                                    ? 'bg-purple-50 text-purple-700 border-purple-200'
+                                    : 'bg-sky-50 text-sky-700 border-sky-200'
+                                }`}>
+                                  {item.file.type.includes('pdf') || item.file.name.endsWith('.pdf') ? 'PDF Document' :
+                                   item.file.type.includes('png') || item.file.name.endsWith('.png') ? 'PNG Image' :
+                                   item.file.type.includes('webp') || item.file.name.endsWith('.webp') ? 'WEBP Image' : 'JPG Image'}
+                                </span>
+                              </div>
+                            </div>
 
-                           {/* Custom Parameters column */}
-                           <div className="col-span-2">
-                             {item.mode === 'compress' ? (
-                               <div className="flex flex-col gap-1">
-                                 <div className="flex justify-between items-center max-w-[175px]">
-                                   <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider select-none">
-                                     Size Target
-                                   </label>
-                                   <div className="flex bg-navy-150 border border-navy-200 rounded p-0.5">
-                                     <button
-                                       type="button"
-                                       onClick={() => {
-                                         const prevMax = item.maxSizeKB || 50;
-                                         updateItemSettings(item.id, {
-                                           sizeMode: 'range',
-                                           minSizeKB: Math.max(5, Math.floor(prevMax * 0.4))
-                                         });
-                                       }}
-                                       className={`text-[8px] font-extrabold rounded px-1 tracking-wide uppercase select-none transition-all cursor-pointer ${
-                                         (item.sizeMode || 'range') === 'range'
-                                           ? 'text-brand-700 bg-white shadow-xs'
-                                           : 'text-navy-500 hover:text-navy-700 bg-transparent'
-                                       }`}
-                                     >
-                                       Range
-                                     </button>
-                                     <button
-                                       type="button"
-                                       onClick={() => {
-                                         updateItemSettings(item.id, {
-                                           sizeMode: 'single',
-                                           minSizeKB: 0
-                                         });
-                                       }}
-                                       className={`text-[8px] font-extrabold rounded px-1 tracking-wide uppercase select-none transition-all cursor-pointer ${
-                                         item.sizeMode === 'single'
-                                           ? 'text-brand-700 bg-white shadow-xs'
-                                           : 'text-navy-500 hover:text-navy-700 bg-transparent'
+                            {/* Operation select: compress or resize */}
+                            <div>
+                              <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1">
+                                Operation Mode
+                              </label>
+                              <select
+                                value={item.mode}
+                                onChange={(e) => updateItemSettings(item.id, { mode: e.target.value as any })}
+                                disabled={isProcessing || item.targetType === 'document'}
+                                className="w-full px-2 py-1 text-[11px] font-bold bg-white border border-navy-200 rounded-lg cursor-pointer disabled:bg-navy-100 disabled:text-navy-400 text-navy-800"
+                              >
+                                <option value="compress">Compress to size</option>
+                                <option value="resize">Resize dimensions</option>
+                              </select>
+                            </div>
+
+                            {/* Custom Parameters column */}
+                            <div className="col-span-2">
+                              {item.mode === 'compress' ? (
+                                <div className="flex flex-col gap-1">
+                                  <div className="flex justify-between items-center max-w-[175px]">
+                                    <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider select-none">
+                                      Size Target
+                                    </label>
+                                    <div className="flex bg-navy-150 border border-navy-200 rounded p-0.5">
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const prevMax = item.maxSizeKB || 50;
+                                          updateItemSettings(item.id, {
+                                            sizeMode: 'range',
+                                            minSizeKB: Math.max(5, Math.floor(prevMax * 0.4))
+                                          });
+                                        }}
+                                        className={`text-[8px] font-extrabold rounded px-1 tracking-wide uppercase select-none transition-all cursor-pointer ${
+                                          (item.sizeMode || 'range') === 'range'
+                                            ? 'text-brand-700 bg-white shadow-xs'
+                                            : 'text-navy-500 hover:text-navy-700 bg-transparent'
+                                        }`}
+                                      >
+                                        Range
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          updateItemSettings(item.id, {
+                                            sizeMode: 'single',
+                                            minSizeKB: 0
+                                          });
+                                        }}
+                                        className={`text-[8px] font-extrabold rounded px-1 tracking-wide uppercase select-none transition-all cursor-pointer ${
+                                          item.sizeMode === 'single'
+                                            ? 'text-brand-700 bg-white shadow-xs'
+                                            : 'text-navy-500 hover:text-navy-700 bg-transparent'
                                         }`}
                                       >
                                         Single
                                       </button>
                                     </div>
                                   </div>
- 
-                                 {(item.sizeMode || 'range') === 'range' ? (
-                                   <div className="flex items-center gap-1.5 text-xs font-semibold text-navy-700 bg-white border border-navy-200 rounded-lg px-2 py-0.5 max-w-[195px]">
-                                     <input
-                                       type="number"
-                                       value={item.minSizeKB}
-                                       onChange={(e) => updateItemSettings(item.id, { minSizeKB: Math.max(0, parseInt(e.target.value, 10) || 0) })}
-                                       onBlur={() => {
-                                         if (item.maxSizeKB <= item.minSizeKB) {
-                                           updateItemSettings(item.id, { maxSizeKB: item.minSizeKB + 10 });
-                                         }
-                                       }}
-                                       disabled={isProcessing}
-                                       className="w-14 px-1.5 py-0.5 text-center focus:outline-none text-[11px]"
-                                       placeholder="Min"
-                                     />
-                                     <span className="text-navy-300 font-normal select-none px-1">to</span>
-                                     <input
-                                       type="number"
-                                       value={item.maxSizeKB}
-                                       onChange={(e) => updateItemSettings(item.id, { maxSizeKB: Math.max(0, parseInt(e.target.value, 10) || 0) })}
-                                       onBlur={() => {
-                                         if (item.maxSizeKB <= item.minSizeKB) {
-                                           updateItemSettings(item.id, { maxSizeKB: item.minSizeKB + 10 });
-                                         }
-                                       }}
-                                       disabled={isProcessing}
-                                       className="w-14 px-1.5 py-0.5 text-center focus:outline-none font-bold text-brand-700 text-[11px]"
-                                       placeholder="Max"
-                                     />
-                                     <span className="text-[10px] text-navy-400 uppercase font-bold select-none ml-auto pr-0.5">KB</span>
-                                   </div>
-                                 ) : (
-                                   <div className="flex items-center gap-1.5 text-xs font-semibold text-navy-700 bg-white border border-navy-200 rounded-lg px-2 py-0.5 max-w-[195px]">
-                                     <span className="text-[10px] text-navy-400 font-bold select-none px-0.5">Under</span>
-                                     <input
-                                       type="number"
-                                       value={item.maxSizeKB}
-                                       onChange={(e) => updateItemSettings(item.id, { maxSizeKB: Math.max(5, parseInt(e.target.value, 10) || 5) })}
-                                       disabled={isProcessing}
-                                       className="w-16 px-1.5 py-0.5 text-center focus:outline-none font-bold text-brand-700 text-[11px]"
-                                       placeholder="Limit"
-                                     />
-                                     <span className="text-[10px] text-navy-400 uppercase font-bold select-none ml-auto pr-0.5">KB</span>
-                                   </div>
-                                 )}
-                               </div>
-                             ) : (
-                              <div>
-                                <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1">
-                                  Dimensions resize parameters
-                                </label>
-                                <div className="flex flex-col gap-1">
-                                  <div className="flex items-center gap-1 bg-white border border-navy-200 rounded-lg px-1.5 py-0.5 max-w-[185px]">
-                                    <input
-                                      type="number"
-                                      value={item.resizeWidth}
-                                      onChange={(e) => updateItemSettings(item.id, { resizeWidth: Math.max(1, parseInt(e.target.value, 10) || 0) })}
-                                      disabled={isProcessing}
-                                      className="w-9 px-0.5 py-0.5 text-center focus:outline-none text-[11px]"
-                                    />
-                                    <span className="text-navy-300 font-normal">x</span>
-                                    <input
-                                      type="number"
-                                      value={item.resizeHeight}
-                                      onChange={(e) => updateItemSettings(item.id, { resizeHeight: Math.max(1, parseInt(e.target.value, 10) || 0) })}
-                                      disabled={isProcessing}
-                                      className="w-9 px-0.5 py-0.5 text-center focus:outline-none text-[11px]"
-                                    />
-                                    <select
-                                      value={item.resizeUnit}
-                                      onChange={(e) => updateItemSettings(item.id, { resizeUnit: e.target.value as any })}
-                                      disabled={isProcessing}
-                                      className="text-[10px] bg-transparent outline-none cursor-pointer text-navy-600 ml-1"
-                                    >
-                                      <option value="px">px</option>
-                                      <option value="cm">cm</option>
-                                      <option value="inch">in</option>
-                                    </select>
-                                    <button
-                                      type="button"
-                                      onClick={() => updateItemSettings(item.id, { maintainAspectRatio: !item.maintainAspectRatio })}
-                                      disabled={isProcessing}
-                                      className={`ml-1 text-[9px] font-bold rounded px-1 transition-all ${
-                                        item.maintainAspectRatio ? 'text-brand-600 bg-brand-50' : 'text-navy-400 bg-navy-100'
-                                      }`}
-                                      title={item.maintainAspectRatio ? 'Aspect ratio locked' : 'Aspect ratio unlocked'}
-                                    >
-                                      {item.maintainAspectRatio ? 'Lock' : 'Free'}
-                                    </button>
+
+                                  {(item.sizeMode || 'range') === 'range' ? (
+                                    <div className="flex items-center gap-1.5 text-xs font-semibold text-navy-700 bg-white border border-navy-200 rounded-lg px-2 py-0.5 max-w-[195px]">
+                                      <input
+                                        type="number"
+                                        value={item.minSizeKB}
+                                        onChange={(e) => updateItemSettings(item.id, { minSizeKB: Math.max(0, parseInt(e.target.value, 10) || 0) })}
+                                        onBlur={() => {
+                                          if (item.maxSizeKB <= item.minSizeKB) {
+                                            updateItemSettings(item.id, { maxSizeKB: item.minSizeKB + 10 });
+                                          }
+                                        }}
+                                        disabled={isProcessing}
+                                        className="w-14 px-1.5 py-0.5 text-center focus:outline-none text-[11px]"
+                                        placeholder="Min"
+                                      />
+                                      <span className="text-navy-300 font-normal select-none px-1">to</span>
+                                      <input
+                                        type="number"
+                                        value={item.maxSizeKB}
+                                        onChange={(e) => updateItemSettings(item.id, { maxSizeKB: Math.max(0, parseInt(e.target.value, 10) || 0) })}
+                                        onBlur={() => {
+                                          if (item.maxSizeKB <= item.minSizeKB) {
+                                            updateItemSettings(item.id, { maxSizeKB: item.minSizeKB + 10 });
+                                          }
+                                        }}
+                                        disabled={isProcessing}
+                                        className="w-14 px-1.5 py-0.5 text-center focus:outline-none font-bold text-brand-700 text-[11px]"
+                                        placeholder="Max"
+                                      />
+                                      <span className="text-[10px] text-navy-400 uppercase font-bold select-none ml-auto pr-0.5">KB</span>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center gap-1.5 text-xs font-semibold text-navy-700 bg-white border border-navy-200 rounded-lg px-2 py-0.5 max-w-[195px]">
+                                      <span className="text-[10px] text-navy-400 font-bold select-none px-0.5">Under</span>
+                                      <input
+                                        type="number"
+                                        value={item.maxSizeKB}
+                                        onChange={(e) => updateItemSettings(item.id, { maxSizeKB: Math.max(5, parseInt(e.target.value, 10) || 5) })}
+                                        disabled={isProcessing}
+                                        className="w-16 px-1.5 py-0.5 text-center focus:outline-none font-bold text-brand-700 text-[11px]"
+                                        placeholder="Limit"
+                                      />
+                                      <span className="text-[10px] text-navy-400 uppercase font-bold select-none ml-auto pr-0.5">KB</span>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <div>
+                                  <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1">
+                                    Dimensions resize parameters
+                                  </label>
+                                  <div className="flex flex-col gap-1">
+                                    <div className="flex items-center gap-1 bg-white border border-navy-200 rounded-lg px-1.5 py-0.5 max-w-[185px]">
+                                      <input
+                                        type="number"
+                                        value={item.resizeWidth}
+                                        onChange={(e) => updateItemSettings(item.id, { resizeWidth: Math.max(1, parseInt(e.target.value, 10) || 0) })}
+                                        disabled={isProcessing}
+                                        className="w-9 px-0.5 py-0.5 text-center focus:outline-none text-[11px] font-bold text-brand-750"
+                                      />
+                                      <span className="text-navy-300 font-normal">x</span>
+                                      <input
+                                        type="number"
+                                        value={item.resizeHeight}
+                                        onChange={(e) => updateItemSettings(item.id, { resizeHeight: Math.max(1, parseInt(e.target.value, 10) || 0) })}
+                                        disabled={isProcessing}
+                                        className="w-9 px-0.5 py-0.5 text-center focus:outline-none text-[11px] font-bold text-brand-750"
+                                      />
+                                      <select
+                                        value={item.resizeUnit}
+                                        onChange={(e) => updateItemSettings(item.id, { resizeUnit: e.target.value as any })}
+                                        disabled={isProcessing}
+                                        className="text-[10px] bg-transparent outline-none cursor-pointer text-navy-600 ml-1 font-semibold"
+                                      >
+                                        <option value="px">px</option>
+                                        <option value="cm">cm</option>
+                                        <option value="inch">in</option>
+                                      </select>
+                                      <button
+                                        type="button"
+                                        onClick={() => updateItemSettings(item.id, { maintainAspectRatio: !item.maintainAspectRatio })}
+                                        disabled={isProcessing}
+                                        className={`ml-1 text-[9px] font-bold rounded px-1 transition-all ${
+                                          item.maintainAspectRatio ? 'text-brand-600 bg-brand-50' : 'text-navy-400 bg-navy-100'
+                                        }`}
+                                        title={item.maintainAspectRatio ? 'Aspect ratio locked' : 'Aspect ratio unlocked'}
+                                      >
+                                        {item.maintainAspectRatio ? 'Lock' : 'Free'}
+                                      </button>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            )}
-                          </div>
-
-                        </div>
-
-                        {/* Format & Actions Area */}
-                        <div className="flex flex-row xl:flex-col items-center justify-end xl:items-end gap-3.5 border-t xl:border-t-0 border-navy-200/50 pt-3 xl:pt-0 min-w-[140px]">
-                          
-                          {/* Output Format Select */}
-                          <div className="text-right">
-                            <label className="block text-[8px] font-bold text-navy-400 uppercase tracking-wider mb-0.5">
-                              Format
-                            </label>
-                            <select
-                              value={item.outputFormat}
-                              onChange={(e) => updateItemSettings(item.id, { outputFormat: e.target.value as any })}
-                              disabled={isProcessing || item.targetType === 'document'}
-                              className="px-1.5 py-0.5 text-[10px] font-bold bg-white border border-navy-200 rounded cursor-pointer disabled:bg-navy-100 disabled:text-navy-400"
-                            >
-                              {item.targetType === 'document' ? (
-                                <option value="pdf">PDF</option>
-                              ) : (
-                                <>
-                                  <option value="jpeg">JPG</option>
-                                  <option value="png">PNG</option>
-                                </>
                               )}
-                            </select>
+                            </div>
                           </div>
 
-                          {/* Row Status & Downloads */}
-                          <div className="flex items-center gap-1.5">
-                            {result && (
-                              <div className="flex items-center gap-1 select-none">
-                                {result.status === 'processing' && (
-                                  <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 border border-amber-100 rounded-full flex items-center gap-0.5">
-                                    <Spinner size="sm" /> Run
-                                  </span>
+                          {/* Format & Actions Area (Enclosed perfectly in card border) */}
+                          <div className="flex flex-row xl:flex-col items-center justify-end xl:items-end gap-3.5 border-t xl:border-t-0 border-navy-100/70 pt-3 xl:pt-0 min-w-[140px] w-full xl:w-auto">
+                            
+                            {/* Output Format Select */}
+                            <div className="text-right">
+                              <label className="block text-[8px] font-bold text-navy-400 uppercase tracking-wider mb-0.5">
+                                Format
+                              </label>
+                              <select
+                                value={item.outputFormat}
+                                onChange={(e) => updateItemSettings(item.id, { outputFormat: e.target.value as any })}
+                                disabled={isProcessing || item.targetType === 'document'}
+                                className="px-1.5 py-0.5 text-[10px] font-bold bg-white border border-navy-200 rounded cursor-pointer disabled:bg-navy-100 disabled:text-navy-400 text-navy-850 font-semibold"
+                              >
+                                {item.targetType === 'document' ? (
+                                  <option value="pdf">PDF</option>
+                                ) : (
+                                  <>
+                                    <option value="jpeg">JPG</option>
+                                    <option value="png">PNG</option>
+                                  </>
                                 )}
-                                {result.status === 'completed' && (
-                                  <span className="text-[10px] font-bold text-brand-700 bg-brand-50 px-2 py-0.5 border border-brand-100 rounded-full flex items-center gap-0.5" title={result.processedFile ? `Processed size: ${formatBytes(result.processedFile.size)}` : ''}>
-                                    <CheckCircle2 className="h-3 w-3 text-brand-600" /> Done
-                                  </span>
-                                )}
-                                {result.status === 'failed' && (
-                                  <span className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 border border-red-100 rounded-full flex items-center gap-0.5" title={result.error}>
-                                    <XCircle className="h-3 w-3" /> Error
-                                  </span>
-                                )}
-                              </div>
-                            )}
+                              </select>
+                            </div>
 
-                            {result?.status === 'completed' && (
+                            {/* Row Status & Downloads */}
+                            <div className="flex items-center gap-1.5">
+                              {result && (
+                                <div className="flex items-center gap-1 select-none">
+                                  {result.status === 'processing' && (
+                                    <span className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 border border-amber-100 rounded-full flex items-center gap-0.5">
+                                      <Spinner size="sm" /> Run
+                                    </span>
+                                  )}
+                                  {result.status === 'completed' && (
+                                    <span className="text-[10px] font-bold text-brand-700 bg-brand-50 px-2 py-0.5 border border-brand-100 rounded-full flex items-center gap-0.5" title={result.processedFile ? `Processed size: ${formatBytes(result.processedFile.size)}` : ''}>
+                                      <CheckCircle2 className="h-3 w-3 text-brand-600" /> Done
+                                    </span>
+                                  )}
+                                  {result.status === 'failed' && (
+                                    <span className="text-[10px] font-bold text-red-600 bg-red-50 px-2 py-0.5 border border-red-100 rounded-full flex items-center gap-0.5" title={result.error}>
+                                      <XCircle className="h-3 w-3" /> Error
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+
+                              {result?.status === 'completed' && (
+                                <button
+                                  type="button"
+                                  onClick={() => triggerSingleDownload(item.id)}
+                                  className="p-1.5 text-brand-600 hover:bg-brand-50 border border-brand-100 rounded"
+                                  title="Download compiled file"
+                                >
+                                  <Download className="h-3.5 w-3.5" />
+                                </button>
+                              )}
+
                               <button
                                 type="button"
-                                onClick={() => triggerSingleDownload(item.id)}
-                                className="p-1.5 text-brand-600 hover:bg-brand-50 border border-brand-100 rounded"
-                                title="Download compiled file"
+                                onClick={() => removeItem(item.id)}
+                                disabled={isProcessing}
+                                className="p-1.5 text-red-500 hover:bg-red-50 hover:text-red-655 border border-red-100 rounded disabled:opacity-50"
+                                title="Delete row"
                               >
-                                <Download className="h-3.5 w-3.5" />
+                                <Trash2 className="h-3.5 w-3.5" />
                               </button>
-                            )}
+                            </div>
 
-                            <button
-                              type="button"
-                              onClick={() => removeItem(item.id)}
-                              disabled={isProcessing}
-                              className="p-1.5 text-red-500 hover:bg-red-50 hover:text-red-600 border border-red-100 rounded disabled:opacity-50"
-                              title="Delete row"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
                           </div>
 
                         </div>
-
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Footer buttons inside card */}

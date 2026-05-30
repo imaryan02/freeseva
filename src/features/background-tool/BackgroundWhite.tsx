@@ -455,126 +455,132 @@ export const BackgroundWhite: React.FC = () => {
 
               {/* Grid Rows Container with Horizontal Scroll fallback */}
               <div className="w-full overflow-x-auto pb-2 scrollbar-thin">
-                <div className="flex flex-col gap-4 min-w-[760px] pr-1">
+                <div className="flex flex-col gap-4 pr-1">
                   {queue.map((item) => {
                     const result = results[item.id];
                     return (
                       <div
                         key={item.id}
                         onClick={() => setActiveId(item.id)}
-                        className={`flex flex-row items-center justify-between p-4 border rounded-xl transition-all gap-4 cursor-pointer ${
+                        className={`flex flex-col lg:flex-row lg:items-center justify-between p-4 border rounded-xl transition-all gap-4 cursor-pointer w-full lg:min-w-max ${
                           activeId === item.id 
                             ? 'border-brand-500 bg-brand-50/20 shadow-sm ring-1 ring-brand-500/10' 
                             : 'border-navy-200 bg-navy-50/70 hover:bg-navy-50'
                         }`}
                       >
-                        {/* 1. Preview / Thumbnail */}
-                        <div className="w-12 h-12 rounded-lg bg-navy-200 flex-shrink-0 overflow-hidden border border-navy-300 flex items-center justify-center shadow-sm relative select-none">
-                          {item.previewUrl ? (
-                            <img
-                              src={item.previewUrl}
-                              alt="preview"
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <ImageIcon className="h-5 w-5 text-navy-500" />
-                          )}
-                          <span className="absolute bottom-0 inset-x-0 bg-black/60 text-[8px] text-white text-center py-0.2 select-none" title={`Original size: ${formatBytes(item.file.size)}`}>
-                            {formatBytes(item.file.size)}
-                          </span>
-                        </div>
-
-                        {/* 2. Output File Name */}
-                        <div className="flex-1 flex flex-col gap-0.5 min-w-[130px]" onClick={(e) => e.stopPropagation()}>
-                          <span className="text-[9px] uppercase tracking-wider font-bold text-navy-450 select-none flex items-center gap-0.5">
-                            <FileEdit className="h-2.5 w-2.5" /> Output Name
-                          </span>
-                          <input
-                            type="text"
-                            value={item.customName}
-                            onChange={(e) => updateItemSettings(item.id, { customName: sanitizeFileName(e.target.value) })}
-                            disabled={isProcessing}
-                            className="px-2 py-1 text-xs border border-navy-200 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 font-bold text-navy-800 bg-white max-w-[140px]"
-                            placeholder="Rename file..."
-                          />
-                          <div className="text-[9px] text-navy-500 mt-1 font-semibold flex flex-wrap items-center gap-1 select-none">
-                            <span>Orig: <strong className="text-navy-850">{formatBytes(item.file.size)}</strong></span>
-                            {result?.processedFile && result.status === 'completed' && (
-                              <>
-                                <span className="text-navy-300 font-normal select-none">•</span>
-                                <span className="text-brand-700 bg-brand-50 border border-brand-100 rounded px-1 flex items-center gap-0.5 animate-fadeIn">
-                                  Final: <strong className="font-extrabold">{formatBytes(result.processedFile.size)}</strong>
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* 3. File Type (Auto) */}
-                        <div className="min-w-[80px] select-none">
-                          <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5">
-                            Type
-                          </label>
-                          <span className="px-2 py-1.5 text-[10px] font-extrabold uppercase rounded-lg border border-brand-200 bg-brand-50 text-brand-750 tracking-wide">
-                            {item.file.type.includes('png') ? 'PNG' : (item.file.type.includes('webp') ? 'WEBP' : 'JPG')}
-                          </span>
-                        </div>
-
-                        {/* 4. Cleaning Mode select */}
-                        <div className="min-w-[120px]" onClick={(e) => e.stopPropagation()}>
-                          <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5 select-none">
-                            Cleaning Mode
-                          </label>
-                          <select
-                            value={item.mode}
-                            onChange={(e) => {
-                              const selectedMode = e.target.value as 'lightness' | 'chromakey';
-                              updateItemSettings(item.id, { 
-                                mode: selectedMode, 
-                                tolerance: selectedMode === 'lightness' ? 30 : 12 
-                              });
-                            }}
-                            disabled={isProcessing}
-                            className="w-full px-2 py-1 text-[11px] font-bold bg-white border border-navy-200 rounded-lg cursor-pointer"
-                          >
-                            <option value="lightness">Auto Lightness</option>
-                            <option value="chromakey">Color Picker</option>
-                          </select>
-                        </div>
-
-                        {/* 5. Parameters & Tolerance slider */}
-                        <div className="min-w-[150px] flex flex-col gap-1" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex justify-between items-center text-[9px] font-bold text-navy-450 select-none">
-                            <span>Tolerance: {item.tolerance}%</span>
-                            {item.mode === 'chromakey' && (
-                              <div 
-                                className="h-3 w-3 rounded-full border border-navy-300 shadow-sm"
-                                style={{
-                                  backgroundColor: item.targetColor 
-                                    ? `rgb(${item.targetColor.r},${item.targetColor.g},${item.targetColor.b})` 
-                                    : 'transparent'
-                                }}
+                        {/* Left Group: Thumbnail + Output Name (Keeps side-by-side even on mobile) */}
+                        <div className="flex items-center gap-4 w-full lg:w-auto">
+                          {/* 1. Preview / Thumbnail */}
+                          <div className="w-12 h-12 rounded-lg bg-navy-200 flex-shrink-0 overflow-hidden border border-navy-300 flex items-center justify-center shadow-sm relative select-none">
+                            {item.previewUrl ? (
+                              <img
+                                src={item.previewUrl}
+                                alt="preview"
+                                className="w-full h-full object-cover"
                               />
+                            ) : (
+                              <ImageIcon className="h-5 w-5 text-navy-500" />
                             )}
-                          </div>
-                          <input
-                            type="range"
-                            min={5}
-                            max={item.mode === 'lightness' ? 90 : 40}
-                            value={item.tolerance}
-                            onChange={(e) => updateItemSettings(item.id, { tolerance: parseInt(e.target.value, 10) })}
-                            disabled={isProcessing}
-                            className="w-full h-1 bg-navy-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
-                          />
-                          {item.mode === 'chromakey' && !item.targetColor && (
-                            <span className="text-[8px] text-amber-600 font-bold select-none animate-pulse">
-                              ⚠️ Select color on right canvas
+                            <span className="absolute bottom-0 inset-x-0 bg-black/60 text-[8px] text-white text-center py-0.2 select-none" title={`Original size: ${formatBytes(item.file.size)}`}>
+                              {formatBytes(item.file.size)}
                             </span>
-                          )}
+                          </div>
+
+                          {/* 2. Output File Name */}
+                          <div className="flex-1 lg:flex-initial flex flex-col gap-0.5 min-w-[130px] lg:min-w-[150px]" onClick={(e) => e.stopPropagation()}>
+                            <span className="text-[9px] uppercase tracking-wider font-bold text-navy-450 select-none flex items-center gap-0.5">
+                              <FileEdit className="h-2.5 w-2.5" /> Output Name
+                            </span>
+                            <input
+                              type="text"
+                              value={item.customName}
+                              onChange={(e) => updateItemSettings(item.id, { customName: sanitizeFileName(e.target.value) })}
+                              disabled={isProcessing}
+                              className="px-2 py-1 text-xs border border-navy-200 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 font-bold text-navy-800 bg-white w-full max-w-[140px]"
+                              placeholder="Rename file..."
+                            />
+                            <div className="text-[9px] text-navy-500 mt-1 font-semibold flex flex-wrap items-center gap-1 select-none">
+                              <span>Orig: <strong className="text-navy-850">{formatBytes(item.file.size)}</strong></span>
+                              {result?.processedFile && result.status === 'completed' && (
+                                <>
+                                  <span className="text-navy-300 font-normal select-none">•</span>
+                                  <span className="text-brand-700 bg-brand-50 border border-brand-100 rounded px-1 flex items-fadeIn">
+                                    Final: <strong className="font-extrabold">{formatBytes(result.processedFile.size)}</strong>
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
                         </div>
 
-                        {/* 6. Row Actions */}
-                        <div className="flex items-center gap-1.5 justify-end min-w-[80px]" onClick={(e) => e.stopPropagation()}>
+                        {/* Middle Group: Settings (Stacked grid on mobile, horizontal columns on desktop) */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full lg:flex lg:flex-row lg:items-center lg:justify-between lg:w-auto lg:gap-6 flex-1 border-t lg:border-t-0 border-navy-100/70 pt-3 lg:pt-0">
+                          {/* 3. File Type (Auto) */}
+                          <div className="min-w-[80px] select-none">
+                            <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5">
+                              Type
+                            </label>
+                            <span className="inline-block px-2 py-1.5 text-[10px] font-extrabold uppercase rounded-lg border border-brand-200 bg-brand-50 text-brand-750 tracking-wide">
+                              {item.file.type.includes('png') ? 'PNG' : (item.file.type.includes('webp') ? 'WEBP' : 'JPG')}
+                            </span>
+                          </div>
+
+                          {/* 4. Cleaning Mode select */}
+                          <div className="min-w-[120px]" onClick={(e) => e.stopPropagation()}>
+                            <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5 select-none">
+                              Cleaning Mode
+                            </label>
+                            <select
+                              value={item.mode}
+                              onChange={(e) => {
+                                const selectedMode = e.target.value as 'lightness' | 'chromakey';
+                                updateItemSettings(item.id, { 
+                                  mode: selectedMode, 
+                                  tolerance: selectedMode === 'lightness' ? 30 : 12 
+                                });
+                              }}
+                              disabled={isProcessing}
+                              className="w-full px-2 py-1 text-[11px] font-bold bg-white border border-navy-200 rounded-lg cursor-pointer text-navy-850 font-semibold"
+                            >
+                              <option value="lightness">Auto Lightness</option>
+                              <option value="chromakey">Color Picker</option>
+                            </select>
+                          </div>
+
+                          {/* 5. Parameters & Tolerance slider */}
+                          <div className="min-w-[150px] flex flex-col gap-1" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex justify-between items-center text-[9px] font-bold text-navy-450 select-none">
+                              <span>Tolerance: {item.tolerance}%</span>
+                              {item.mode === 'chromakey' && (
+                                <div 
+                                  className="h-3 w-3 rounded-full border border-navy-300 shadow-sm"
+                                  style={{
+                                    backgroundColor: item.targetColor 
+                                      ? `rgb(${item.targetColor.r},${item.targetColor.g},${item.targetColor.b})` 
+                                      : 'transparent'
+                                  }}
+                                />
+                              )}
+                            </div>
+                            <input
+                              type="range"
+                              min={5}
+                              max={item.mode === 'lightness' ? 90 : 40}
+                              value={item.tolerance}
+                              onChange={(e) => updateItemSettings(item.id, { tolerance: parseInt(e.target.value, 10) })}
+                              disabled={isProcessing}
+                              className="w-full h-1 bg-navy-200 rounded-lg appearance-none cursor-pointer accent-brand-600"
+                            />
+                            {item.mode === 'chromakey' && !item.targetColor && (
+                              <span className="text-[8px] text-amber-600 font-bold select-none animate-pulse">
+                                ⚠️ Select color on right canvas
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Right Group: Row Actions (Enclosed perfectly in card border) */}
+                        <div className="flex items-center gap-2.5 justify-end w-full lg:w-auto lg:min-w-[135px] border-t lg:border-t-0 border-navy-100/70 pt-3 lg:pt-0" onClick={(e) => e.stopPropagation()}>
                           {result && (
                             <div className="flex items-center gap-1 select-none">
                               {result.status === 'processing' && (
@@ -610,7 +616,7 @@ export const BackgroundWhite: React.FC = () => {
                             type="button"
                             onClick={() => removeItem(item.id)}
                             disabled={isProcessing}
-                            className="p-1.5 text-red-500 hover:bg-red-50 hover:text-red-650 border border-red-100 rounded transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+                            className="p-1.5 text-red-500 hover:bg-red-50 hover:text-red-655 border border-red-100 rounded transition-all cursor-pointer active:scale-95 disabled:opacity-50"
                             title="Delete"
                           >
                             <Trash2 className="h-3.5 w-3.5" />

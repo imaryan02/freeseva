@@ -433,225 +433,217 @@ export const PdfCompressor: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Rows matching screenshot exactly */}
-                <div className="flex flex-col gap-4">
-                  {queue.map((item) => {
-                    const result = results[item.id];
-                    return (
-                      <div
-                        key={item.id}
-                        className="flex flex-col xl:flex-row xl:items-center justify-between p-4 bg-navy-50/70 border border-navy-200 rounded-xl hover:bg-navy-50 transition-all gap-4"
-                      >
-                        {/* 1. Preview / Thumbnail */}
-                        <div className="w-12 h-12 rounded-lg bg-navy-200 flex-shrink-0 overflow-hidden border border-navy-300 flex items-center justify-center shadow-sm relative select-none">
-                          {item.previewUrl ? (
-                            <img
-                              src={item.previewUrl}
-                              alt="preview"
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <FileText className="h-5 w-5 text-navy-500" />
-                          )}
-                          <span className="absolute bottom-0 inset-x-0 bg-black/60 text-[8px] text-white text-center py-0.2 select-none" title={`Original size: ${formatBytes(item.file.size)}`}>
-                            {formatBytes(item.file.size)}
-                          </span>
-                        </div>
+                {/* Grid Rows Container with Horizontal Scroll fallback */}
+                <div className="w-full overflow-x-auto pb-2 scrollbar-thin">
+                  <div className="flex flex-col gap-4 pr-1">
+                    {queue.map((item) => {
+                      const result = results[item.id];
+                      return (
+                        <div
+                          key={item.id}
+                          className="flex flex-col lg:flex-row lg:items-center justify-between p-4 bg-navy-50/70 border border-navy-200 rounded-xl hover:bg-navy-50 transition-all gap-4 animate-fadeIn w-full lg:min-w-max"
+                        >
+                          {/* Left Group: Thumbnail + Output Name (Keeps side-by-side even on mobile) */}
+                          <div className="flex items-center gap-4 w-full lg:w-auto">
+                            {/* 1. Preview / Thumbnail */}
+                            <div className="w-12 h-12 rounded-lg bg-navy-200 flex-shrink-0 overflow-hidden border border-navy-300 flex items-center justify-center shadow-sm relative select-none">
+                              {item.previewUrl ? (
+                                <img
+                                  src={item.previewUrl}
+                                  alt="preview"
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <FileText className="h-5 w-5 text-navy-500" />
+                              )}
+                              <span className="absolute bottom-0 inset-x-0 bg-black/60 text-[8px] text-white text-center py-0.2 select-none" title={`Original size: ${formatBytes(item.file.size)}`}>
+                                {formatBytes(item.file.size)}
+                              </span>
+                            </div>
 
-                        {/* 2. OUTPUT FILE NAME */}
-                        <div className="flex-1 flex flex-col gap-0.5 min-w-[160px]">
-                          <span className="text-[9px] uppercase tracking-wider font-bold text-navy-450 select-none flex items-center gap-0.5">
-                            <FileEdit className="h-2.5 w-2.5" /> Output File Name
-                          </span>
-                          <input
-                            type="text"
-                            value={item.customName}
-                            onChange={(e) => updateItemSettings(item.id, { customName: sanitizeFileName(e.target.value) })}
-                            disabled={isProcessing}
-                            className="px-2 py-1 text-xs border border-navy-200 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 font-bold text-navy-800 bg-white max-w-[150px]"
-                            placeholder="Rename file..."
-                          />
-                          <div className="text-[9px] text-navy-500 mt-1 font-semibold flex flex-wrap items-center gap-1 select-none">
-                            <span>Orig: <strong className="text-navy-850">{formatBytes(item.file.size)}</strong></span>
-                            {result?.processedFile && result.status === 'completed' && (
-                              <>
-                                <span className="text-navy-300 font-normal select-none">•</span>
-                                <span className="text-brand-700 bg-brand-50 border border-brand-100 rounded px-1 flex items-center gap-0.5 animate-fadeIn">
-                                  Final: <strong className="font-extrabold">{formatBytes(result.processedFile.size)}</strong>
-                                </span>
-                              </>
-                            )}
+                            {/* 2. OUTPUT FILE NAME */}
+                            <div className="flex-1 lg:flex-initial flex flex-col gap-0.5 min-w-[130px] lg:min-w-[150px]">
+                              <span className="text-[9px] uppercase tracking-wider font-bold text-navy-450 select-none flex items-center gap-0.5">
+                                <FileEdit className="h-2.5 w-2.5" /> Output File Name
+                              </span>
+                              <input
+                                type="text"
+                                value={item.customName}
+                                onChange={(e) => updateItemSettings(item.id, { customName: sanitizeFileName(e.target.value) })}
+                                disabled={isProcessing}
+                                className="px-2 py-1 text-xs border border-navy-200 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 font-bold text-navy-800 bg-white w-full max-w-[140px]"
+                                placeholder="Rename file..."
+                              />
+                              <div className="text-[9px] text-navy-500 mt-1 font-semibold flex flex-wrap items-center gap-1 select-none">
+                                <span>Orig: <strong className="text-navy-850">{formatBytes(item.file.size)}</strong></span>
+                                {result?.processedFile && result.status === 'completed' && (
+                                  <>
+                                    <span className="text-navy-300 font-normal select-none">•</span>
+                                    <span className="text-brand-700 bg-brand-50 border border-brand-100 rounded px-1 flex items-center gap-0.5 animate-fadeIn">
+                                      Final: <strong className="font-extrabold">{formatBytes(result.processedFile.size)}</strong>
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                        </div>
 
-                        {/* 3. FILE TYPE (AUTO) */}
-                        <div className="min-w-[110px]">
-                          <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5 select-none">
-                            File Type (Auto)
-                          </label>
-                          <div className="flex items-center">
-                            <span className="px-2.5 py-1 text-[11px] font-extrabold uppercase rounded-lg border border-emerald-250 bg-emerald-50 text-emerald-700 tracking-wide select-none">
-                              PDF Document
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* 4. OPERATION MODE */}
-                        <div className="min-w-[130px]">
-                          <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5 select-none">
-                            Operation Mode
-                          </label>
-                          <select
-                            disabled={true}
-                            className="w-full px-2 py-1 text-[11px] font-bold bg-navy-50 border border-navy-200 rounded-lg cursor-not-allowed text-navy-400"
-                          >
-                            <option>Compress to size</option>
-                          </select>
-                        </div>
-
-                        {/* 5. SIZE TARGET */}
-                        <div className="flex-1 min-w-[210px]">
-                          <div className="flex flex-col gap-1">
-                            <div className="flex justify-between items-center max-w-[195px] select-none">
-                              <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider">
-                                Size Target
+                          {/* Middle Group: Settings (Stacked grid on mobile, horizontal columns on desktop) */}
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full lg:flex lg:flex-row lg:items-center lg:justify-between lg:w-auto lg:gap-6 flex-1 border-t lg:border-t-0 border-navy-100/70 pt-3 lg:pt-0">
+                            {/* 3. FILE TYPE (AUTO) */}
+                            <div className="min-w-[110px] select-none">
+                              <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5 select-none">
+                                File Type (Auto)
                               </label>
-                              <div className="flex bg-navy-150 border border-navy-200 rounded p-0.5">
-                                <button
-                                  type="button"
-                                  onClick={() => updateItemSettings(item.id, { sizeMode: 'range', minSizeKB: Math.max(5, Math.floor(item.maxSizeKB * 0.4)) })}
-                                  disabled={isProcessing}
-                                  className={`text-[8px] font-extrabold rounded px-1.5 py-0.5 tracking-wide uppercase select-none transition-all cursor-pointer ${
-                                    item.sizeMode === 'range'
-                                      ? 'text-brand-700 bg-white shadow-xs font-black'
-                                      : 'text-navy-500 hover:text-navy-700 bg-transparent'
-                                  }`}
-                                >
-                                  Range
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => updateItemSettings(item.id, { sizeMode: 'single', minSizeKB: 0 })}
-                                  disabled={isProcessing}
-                                  className={`text-[8px] font-extrabold rounded px-1.5 py-0.5 tracking-wide uppercase select-none transition-all cursor-pointer ${
-                                    item.sizeMode === 'single'
-                                      ? 'text-brand-700 bg-white shadow-xs font-black'
-                                      : 'text-navy-500 hover:text-navy-700 bg-transparent'
-                                  }`}
-                                >
-                                  Single
-                                </button>
-                              </div>
+                              <span className="inline-block px-2.5 py-1 text-[10px] font-extrabold uppercase rounded-lg border border-emerald-250 bg-emerald-50 text-emerald-700 tracking-wide">
+                                PDF Document
+                              </span>
                             </div>
 
-                            {item.sizeMode === 'range' ? (
-                              <div className="flex items-center gap-1 bg-white border border-navy-200 rounded-lg px-2 py-0.5 max-w-[195px]">
-                                <input
-                                  type="number"
-                                  value={item.minSizeKB}
-                                  onChange={(e) => updateItemSettings(item.id, { minSizeKB: Math.max(0, parseInt(e.target.value, 10) || 0) })}
-                                  onBlur={() => {
-                                    if (item.maxSizeKB <= item.minSizeKB) {
-                                      updateItemSettings(item.id, { maxSizeKB: item.minSizeKB + 10 });
-                                    }
-                                  }}
-                                  disabled={isProcessing}
-                                  className="w-14 px-1.5 py-0.5 text-center focus:outline-none text-[11px]"
-                                  placeholder="Min"
-                                />
-                                <span className="text-navy-300 font-normal select-none px-1">to</span>
-                                <input
-                                  type="number"
-                                  value={item.maxSizeKB}
-                                  onChange={(e) => updateItemSettings(item.id, { maxSizeKB: Math.max(0, parseInt(e.target.value, 10) || 0) })}
-                                  onBlur={() => {
-                                    if (item.maxSizeKB <= item.minSizeKB) {
-                                      updateItemSettings(item.id, { maxSizeKB: item.minSizeKB + 10 });
-                                    }
-                                  }}
-                                  disabled={isProcessing}
-                                  className="w-14 px-1.5 py-0.5 text-center focus:outline-none font-bold text-brand-750 text-[11px]"
-                                  placeholder="Max"
-                                />
-                                <span className="text-[9px] text-navy-400 uppercase font-bold select-none ml-auto pr-0.5">KB</span>
+                            {/* 4. OPERATION MODE */}
+                            <div className="min-w-[130px]">
+                              <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5 select-none">
+                                Operation Mode
+                              </label>
+                              <select
+                                disabled={true}
+                                className="w-full px-2 py-1 text-[11px] font-bold bg-navy-50 border border-navy-200 rounded-lg cursor-not-allowed text-navy-400"
+                              >
+                                <option>Compress to size</option>
+                              </select>
+                            </div>
+
+                            {/* 5. SIZE TARGET */}
+                            <div className="min-w-[210px]">
+                              <div className="flex flex-col gap-1">
+                                <div className="flex justify-between items-center max-w-[195px] select-none">
+                                  <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider">
+                                    Size Target
+                                  </label>
+                                  <div className="flex bg-navy-150 border border-navy-200 rounded p-0.5">
+                                    <button
+                                      type="button"
+                                      onClick={() => updateItemSettings(item.id, { sizeMode: 'range', minSizeKB: Math.max(5, Math.floor(item.maxSizeKB * 0.4)) })}
+                                      disabled={isProcessing}
+                                      className={`text-[8px] font-extrabold rounded px-1.5 py-0.5 tracking-wide uppercase select-none transition-all cursor-pointer ${
+                                        item.sizeMode === 'range'
+                                          ? 'text-brand-700 bg-white shadow-xs font-black'
+                                          : 'text-navy-500 hover:text-navy-700 bg-transparent'
+                                      }`}
+                                    >
+                                      Range
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => updateItemSettings(item.id, { sizeMode: 'single', minSizeKB: 0 })}
+                                      disabled={isProcessing}
+                                      className={`text-[8px] font-extrabold rounded px-1.5 py-0.5 tracking-wide uppercase select-none transition-all cursor-pointer ${
+                                        item.sizeMode === 'single'
+                                          ? 'text-brand-700 bg-white shadow-xs font-black'
+                                          : 'text-navy-500 hover:text-navy-700 bg-transparent'
+                                      }`}
+                                    >
+                                      Single
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {item.sizeMode === 'range' ? (
+                                  <div className="flex items-center gap-1 bg-white border border-navy-200 rounded-lg px-2 py-0.5 max-w-[195px]">
+                                    <input
+                                      type="number"
+                                      value={item.minSizeKB}
+                                      onChange={(e) => updateItemSettings(item.id, { minSizeKB: Math.max(0, parseInt(e.target.value, 10) || 0) })}
+                                      onBlur={() => {
+                                        if (item.maxSizeKB <= item.minSizeKB) {
+                                          updateItemSettings(item.id, { maxSizeKB: item.minSizeKB + 10 });
+                                        }
+                                      }}
+                                      disabled={isProcessing}
+                                      className="w-14 px-1.5 py-0.5 text-center focus:outline-none text-[11px]"
+                                      placeholder="Min"
+                                    />
+                                    <span className="text-navy-300 font-normal select-none px-1">to</span>
+                                    <input
+                                      type="number"
+                                      value={item.maxSizeKB}
+                                      onChange={(e) => updateItemSettings(item.id, { maxSizeKB: Math.max(0, parseInt(e.target.value, 10) || 0) })}
+                                      onBlur={() => {
+                                        if (item.maxSizeKB <= item.minSizeKB) {
+                                          updateItemSettings(item.id, { maxSizeKB: item.minSizeKB + 10 });
+                                        }
+                                      }}
+                                      disabled={isProcessing}
+                                      className="w-14 px-1.5 py-0.5 text-center focus:outline-none font-bold text-brand-750 text-[11px]"
+                                      placeholder="Max"
+                                    />
+                                    <span className="text-[9px] text-navy-400 uppercase font-bold select-none ml-auto pr-0.5">KB</span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-1.5 text-xs font-semibold text-navy-700 bg-white border border-navy-200 rounded-lg px-2 py-0.5 max-w-[195px]">
+                                    <span className="text-[10px] text-navy-455 font-bold select-none px-0.5">Under</span>
+                                    <input
+                                      type="number"
+                                      value={item.maxSizeKB}
+                                      onChange={(e) => updateItemSettings(item.id, { maxSizeKB: Math.max(5, parseInt(e.target.value, 10) || 5) })}
+                                      disabled={isProcessing}
+                                      className="w-16 px-1.5 py-0.5 text-center focus:outline-none font-bold text-brand-700 text-[11px]"
+                                      placeholder="Limit"
+                                    />
+                                    <span className="text-[10px] text-navy-400 uppercase font-bold select-none ml-auto pr-0.5">KB</span>
+                                  </div>
+                                )}
                               </div>
-                            ) : (
-                              <div className="flex items-center gap-1.5 text-xs font-semibold text-navy-700 bg-white border border-navy-200 rounded-lg px-2 py-0.5 max-w-[195px]">
-                                <span className="text-[10px] text-navy-450 font-bold select-none px-0.5">Under</span>
-                                <input
-                                  type="number"
-                                  value={item.maxSizeKB}
-                                  onChange={(e) => updateItemSettings(item.id, { maxSizeKB: Math.max(5, parseInt(e.target.value, 10) || 5) })}
-                                  disabled={isProcessing}
-                                  className="w-16 px-1.5 py-0.5 text-center focus:outline-none font-bold text-brand-700 text-[11px]"
-                                  placeholder="Limit"
-                                />
-                                <span className="text-[10px] text-navy-400 uppercase font-bold select-none ml-auto pr-0.5">KB</span>
+                            </div>
+                          </div>
+
+                          {/* Right Group: Row Actions (Enclosed perfectly in card border) */}
+                          <div className="flex items-center gap-2.5 justify-end w-full lg:w-auto lg:min-w-[135px] border-t lg:border-t-0 border-navy-100/70 pt-3 lg:pt-0">
+                            {result && (
+                              <div className="flex items-center gap-1 select-none">
+                                {result.status === 'processing' && (
+                                  <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 border border-amber-100 rounded-full flex items-center gap-0.5">
+                                    <Spinner size="sm" />
+                                  </span>
+                                )}
+                                {result.status === 'completed' && (
+                                  <span className="text-[10px] font-bold text-brand-700 bg-brand-50 px-2 py-0.5 border border-brand-100 rounded-full flex items-center gap-0.5 animate-fadeIn">
+                                    <CheckCircle2 className="h-3.5 w-3.5 text-brand-600" /> Done
+                                  </span>
+                                )}
+                                {result.status === 'failed' && (
+                                  <span className="text-[10px] font-bold text-red-650 bg-red-50 px-2 py-0.5 border border-red-100 rounded-full flex items-center gap-0.5" title={result.error}>
+                                    <XCircle className="h-3.5 w-3.5" /> Error
+                                  </span>
+                                )}
                               </div>
                             )}
-                          </div>
-                        </div>
 
-                        {/* 6. FORMAT */}
-                        <div className="min-w-[80px]">
-                          <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5 select-none">
-                            Format
-                          </label>
-                          <select
-                            disabled={true}
-                            className="w-full px-2 py-1 text-[11px] font-bold bg-navy-50 border border-navy-200 rounded-lg cursor-not-allowed text-navy-400"
-                          >
-                            <option>PDF</option>
-                          </select>
-                        </div>
+                            {result?.status === 'completed' && (
+                              <button
+                                type="button"
+                                onClick={() => triggerSingleDownload(item.id)}
+                                className="p-1.5 text-brand-600 hover:bg-brand-50 border border-brand-100 rounded transition-all cursor-pointer active:scale-95"
+                                title="Download PDF"
+                              >
+                                <Download className="h-3.5 w-3.5" />
+                              </button>
+                            )}
 
-                        {/* 7. ROW ACTIONS */}
-                        <div className="flex items-center gap-1.5 justify-end min-w-[90px]">
-                          {result && (
-                            <div className="flex items-center gap-1 select-none">
-                              {result.status === 'processing' && (
-                                <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 border border-amber-100 rounded-full flex items-center gap-0.5">
-                                  <Spinner size="sm" />
-                                </span>
-                              )}
-                              {result.status === 'completed' && (
-                                <span className="text-[10px] font-bold text-brand-700 bg-brand-50 px-2 py-0.5 border border-brand-100 rounded-full flex items-center gap-0.5 animate-fadeIn" title={result.savingsPercentage !== undefined ? `Savings: -${result.savingsPercentage}%` : ''}>
-                                  <CheckCircle2 className="h-3.5 w-3.5 text-brand-600" /> Done
-                                </span>
-                              )}
-                              {result.status === 'failed' && (
-                                <span className="text-[10px] font-bold text-red-605 bg-red-50 px-2 py-0.5 border border-red-100 rounded-full flex items-center gap-0.5" title={result.error}>
-                                  <XCircle className="h-3.5 w-3.5" /> Error
-                                </span>
-                              )}
-                            </div>
-                          )}
-
-                          {result?.status === 'completed' && (
                             <button
                               type="button"
-                              onClick={() => triggerSingleDownload(item.id)}
-                              className="p-1.5 text-brand-600 hover:bg-brand-50 border border-brand-100 rounded transition-all cursor-pointer active:scale-95"
-                              title="Download PDF"
+                              onClick={() => removeItem(item.id)}
+                              disabled={isProcessing}
+                              className="p-1.5 text-red-500 hover:bg-red-50 hover:text-red-650 border border-red-100 rounded transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+                              title="Delete"
                             >
-                              <Download className="h-3.5 w-3.5" />
+                              <Trash2 className="h-3.5 w-3.5" />
                             </button>
-                          )}
-
-                          <button
-                            type="button"
-                            onClick={() => removeItem(item.id)}
-                            disabled={isProcessing}
-                            className="p-1.5 text-red-500 hover:bg-red-50 hover:text-red-650 border border-red-100 rounded transition-all cursor-pointer active:scale-95 disabled:opacity-50"
-                            title="Delete"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </button>
+                          </div>
                         </div>
-
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Footer notes and compile actions */}
