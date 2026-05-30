@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #f0fdf4;
+  --color-brand-100: #dcfce7;
+  --color-brand-200: #bbf7d0;
+  --color-brand-300: #86efac;
+  --color-brand-400: #4ade80;
+  --color-brand-500: #22c55e;
+  --color-brand-600: #16a34a;
+  --color-brand-700: #15803d;
+  --color-brand-800: #166534;
+  --color-brand-900: #14532d;
+  --color-brand-950: #052e16;
+
+  --color-navy-50: #f4f6fa;
+  --color-navy-100: #e7ebf4;
+  --color-navy-200: #c8d2e6;
+  --color-navy-300: #99afd0;
+  --color-navy-400: #6285b5;
+  --color-navy-500: #40669b;
+  --color-navy-600: #305080;
+  --color-navy-700: #274169;
+  --color-navy-800: #223858;
+  --color-navy-900: #1e304c;
+  --color-navy-950: #111b2d;
+
+  --font-sans: 'Outfit', 'Inter', 'system-ui', -apple-system, sans-serif;
+  --font-display: 'Outfit', 'Inter', sans-serif;
+}
+
+@layer base {
+  html, body {
+    @apply h-full bg-navy-50 text-navy-900 antialiased selection:bg-brand-200 selection:text-brand-900;
+  }
+}
+
+/* Custom utility micro-animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
