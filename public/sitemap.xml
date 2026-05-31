@@ -1,67 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://freeseva.vercel.app/</loc>
+    <loc>https://freeseva.org/</loc>
+    <lastmod>2026-06-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://freeseva.vercel.app/document-tools</loc>
+    <loc>https://freeseva.org/document-tools</loc>
+    <lastmod>2026-06-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.98</priority>
   </url>
   <url>
-    <loc>https://freeseva.vercel.app/image-compressor</loc>
+    <loc>https://freeseva.org/image-compressor</loc>
+    <lastmod>2026-06-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://freeseva.vercel.app/pdf-compressor</loc>
+    <loc>https://freeseva.org/pdf-compressor</loc>
+    <lastmod>2026-06-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.95</priority>
   </url>
   <url>
-    <loc>https://freeseva.vercel.app/signature-compressor</loc>
+    <loc>https://freeseva.org/signature-compressor</loc>
+    <lastmod>2026-06-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://freeseva.vercel.app/image-to-pdf</loc>
+    <loc>https://freeseva.org/image-to-pdf</loc>
+    <lastmod>2026-06-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://freeseva.vercel.app/image-resizer</loc>
+    <loc>https://freeseva.org/image-resizer</loc>
+    <lastmod>2026-06-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
   <url>
-    <loc>https://freeseva.vercel.app/white-background</loc>
+    <loc>https://freeseva.org/white-background</loc>
+    <lastmod>2026-06-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://freeseva.vercel.app/image-converter</loc>
+    <loc>https://freeseva.org/image-converter</loc>
+    <lastmod>2026-06-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://freeseva.vercel.app/image-cropper</loc>
+    <loc>https://freeseva.org/image-cropper</loc>
+    <lastmod>2026-06-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://freeseva.vercel.app/pdf-merge</loc>
+    <loc>https://freeseva.org/pdf-merge</loc>
+    <lastmod>2026-06-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://freeseva.vercel.app/pdf-split</loc>
+    <loc>https://freeseva.org/pdf-split</loc>
+    <lastmod>2026-06-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://freeseva.vercel.app/form-helper</loc>
+    <loc>https://freeseva.org/form-helper</loc>
+    <lastmod>2026-06-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>

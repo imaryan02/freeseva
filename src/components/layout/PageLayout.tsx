@@ -74,6 +74,9 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
     setMeta('og:site_name', 'freeSeva', 'property');
     setMeta('og:image', shareImageUrl, 'property');
     setMeta('og:image:secure_url', shareImageUrl, 'property');
+    setMeta('og:image:type', 'image/png', 'property');
+    setMeta('og:image:width', '1254', 'property');
+    setMeta('og:image:height', '1254', 'property');
     setMeta('og:image:alt', 'freeSeva free PDF, image and signature tools', 'property');
     setMeta('twitter:card', 'summary_large_image');
     setMeta('twitter:title', pageTitle);

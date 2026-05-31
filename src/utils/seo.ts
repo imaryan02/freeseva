@@ -25,7 +25,7 @@ export const SEO_PAGES: Record<string, SeoPage> = {
     path: '/',
     title: 'FreeSeva - Free Digital Services For Everyone',
     description:
-      'Privacy-first tools for PDF compression, image compression, signature preparation, and document utilities.',
+      'FreeSeva is a community initiative offering free digital services for students, professionals and everyone, starting with privacy-first PDF, image and signature tools.',
     h1: 'Free digital services for everyone',
     keywords: [
       'free digital services',
@@ -34,25 +34,32 @@ export const SEO_PAGES: Record<string, SeoPage> = {
       'privacy first tools',
       'document utilities',
       'made in india tools',
+      'free tools for students',
+      'free tools for professionals',
     ],
     summary:
-      'FreeSeva provides free, privacy-first digital services that help people complete everyday document tasks quickly, securely and without hidden costs.',
+      'FreeSeva is a community-focused initiative that provides free, privacy-first digital services for students, professionals and everyday users, starting with document preparation tools.',
     useCases: [
-      'Find free document utilities without mandatory signup.',
-      'Use privacy-first tools for PDFs, photos and signatures.',
-      'Open the Document Tools workspace for form-ready files.',
+      'Use free digital tools for exam, job, admission and document tasks.',
+      'Access privacy-first utilities for PDFs, photos and signatures.',
+      'Start with Document Tools today and use more FreeSeva products as they are added.',
     ],
     faqs: [
       commonPrivacyFaq,
       {
         question: 'What is FreeSeva?',
         answer:
-          'FreeSeva is a free digital services platform focused on simple, privacy-first tools for everyday online tasks.',
+          'FreeSeva is a community initiative that provides free digital services for students, professionals and everyday users.',
       },
       {
-        question: 'Which service is available today?',
+        question: 'Which product is available today?',
         answer:
           'Document Tools is available today, including PDF compression, image compression, signature preparation and the All-in-One Workspace.',
+      },
+      {
+        question: 'Will FreeSeva add more tools?',
+        answer:
+          'Yes. FreeSeva will keep adding useful free product tools over time, focused on real needs in education, work and everyday digital tasks.',
       },
     ],
   },
@@ -333,5 +340,5 @@ export const getSiteOrigin = (): string => {
   const configured = import.meta.env.VITE_SITE_URL as string | undefined;
   if (configured) return configured.replace(/\/$/, '');
   if (typeof window !== 'undefined') return window.location.origin;
-  return 'https://freeseva.vercel.app';
+  return 'https://freeseva.org';
 };
