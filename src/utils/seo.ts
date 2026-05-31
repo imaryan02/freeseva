@@ -23,9 +23,44 @@ const commonPrivacyFaq: SeoFaq = {
 export const SEO_PAGES: Record<string, SeoPage> = {
   '/': {
     path: '/',
-    title: 'freeSeva - Free PDF, Image and Signature Tools for Forms',
+    title: 'FreeSeva - Free Digital Services For Everyone',
     description:
-      'Use free browser-local tools to compress PDFs, compress images, resize photos, convert images to PDF, prepare signatures, merge PDFs and split PDFs for Indian exam, job and government forms.',
+      'Privacy-first tools for PDF compression, image compression, signature preparation, and document utilities.',
+    h1: 'Free digital services for everyone',
+    keywords: [
+      'free digital services',
+      'free online tools',
+      'freeSeva',
+      'privacy first tools',
+      'document utilities',
+      'made in india tools',
+    ],
+    summary:
+      'FreeSeva provides free, privacy-first digital services that help people complete everyday document tasks quickly, securely and without hidden costs.',
+    useCases: [
+      'Find free document utilities without mandatory signup.',
+      'Use privacy-first tools for PDFs, photos and signatures.',
+      'Open the Document Tools workspace for form-ready files.',
+    ],
+    faqs: [
+      commonPrivacyFaq,
+      {
+        question: 'What is FreeSeva?',
+        answer:
+          'FreeSeva is a free digital services platform focused on simple, privacy-first tools for everyday online tasks.',
+      },
+      {
+        question: 'Which service is available today?',
+        answer:
+          'Document Tools is available today, including PDF compression, image compression, signature preparation and the All-in-One Workspace.',
+      },
+    ],
+  },
+  '/document-tools': {
+    path: '/document-tools',
+    title: 'Free Document Tools - PDF Compressor, Image Compressor and Signature Tool',
+    description:
+      'Use free browser-local document tools to compress PDFs, compress images, resize photos, convert images to PDF, prepare signatures, merge PDFs and split PDFs for Indian exam, job and government forms.',
     h1: 'Free online PDF, image and signature tools',
     keywords: [
       'free pdf compressor',

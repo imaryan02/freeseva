@@ -14,7 +14,7 @@ export const Footer: React.FC = () => {
               free<span className="text-brand-400">Seva</span>
             </span>
             <p className="mt-3 text-xs text-navy-400 leading-relaxed max-w-sm">
-              An outcome-driven, client-side utility helper designed for students, candidates, and job seekers in India. Format your passport photo, signatures, thumb impressions, and PDFs in seconds.
+              Free, privacy-first digital services for everyday document work. Prepare PDFs, images and signatures without mandatory signups or hidden costs.
             </p>
           </div>
           
@@ -39,12 +39,12 @@ export const Footer: React.FC = () => {
               Popular Utilities
             </h3>
             <div className="grid grid-cols-2 gap-2 text-xs text-navy-400">
+              <Link to="/document-tools" className="hover:text-brand-400 text-brand-500 font-semibold transition-colors">Document Tools</Link>
               <Link to="/image-compressor" className="hover:text-white transition-colors">Image Compressor</Link>
               <Link to="/signature-compressor" className="hover:text-white transition-colors">Signature Tool</Link>
               <Link to="/image-resizer" className="hover:text-white transition-colors">Image Resizer</Link>
               <Link to="/white-background" className="hover:text-white transition-colors">White Background</Link>
               <Link to="/pdf-compressor" className="hover:text-white transition-colors">PDF Compressor</Link>
-              <Link to="/form-helper" className="hover:text-brand-400 text-brand-500 font-semibold transition-colors">Form Helper</Link>
             </div>
           </div>
 

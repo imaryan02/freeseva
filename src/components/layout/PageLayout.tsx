@@ -5,7 +5,6 @@ import { getSeoPage, getSiteOrigin } from '../../utils/seo';
 import {
   ArrowLeft,
   Download,
-  FileText,
   Grid,
   Home as HomeIcon,
   Menu,
@@ -201,11 +200,16 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
     );
   };
 
-  const navItems = [
+  const navItems: Array<{
+    name: string;
+    path: string;
+    icon: React.ReactNode;
+    isPlaceholder?: boolean;
+    badge?: string;
+  }> = [
     { name: 'Home', path: '/', icon: <HomeIcon className="h-4.5 w-4.5" /> },
-    { name: 'All Tools', path: '/#tools-grid', icon: <Grid className="h-4.5 w-4.5" /> },
+    { name: 'Document Tools', path: '/document-tools', icon: <Grid className="h-4.5 w-4.5" /> },
     { name: 'All-in-One', path: '/form-helper', icon: <Sparkles className="h-4.5 w-4.5 text-violet-500" /> },
-    { name: 'Use Cases', path: '#use-cases', icon: <FileText className="h-4.5 w-4.5" />, isPlaceholder: true, badge: 'Soon' },
   ];
 
   const handleNavClick = (item: typeof navItems[0], e: React.MouseEvent) => {

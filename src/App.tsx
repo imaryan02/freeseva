@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Home } from './routes/Home';
+import { DocumentTools } from './routes/DocumentTools';
 import { Spinner } from './components/ui/Spinner';
 
 const ImageCompressor = lazy(() =>
@@ -70,8 +71,9 @@ function App() {
     <Router>
       <Suspense fallback={routeFallback}>
         <Routes>
-          {/* Core Home Route */}
+          {/* Core Routes */}
           <Route path="/" element={<Home />} />
+          <Route path="/document-tools" element={<DocumentTools />} />
           
           {/* Tool Shell Routes */}
           <Route path="/image-compressor" element={<ImageCompressor />} />

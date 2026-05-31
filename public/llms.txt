@@ -1,9 +1,10 @@
 # freeSeva
 
-freeSeva is a free, privacy-first browser utility for preparing photos, signatures and PDFs for online forms, exam portals, job portals and government applications.
+freeSeva is a free, privacy-first digital services platform. Its first available service is Document Tools for preparing photos, signatures and PDFs for online forms, exam portals, job portals and government applications.
 
 Important pages:
-- https://freeseva.vercel.app/ - All tools overview
+- https://freeseva.vercel.app/ - FreeSeva homepage and mission
+- https://freeseva.vercel.app/document-tools - Document Tools overview
 - https://freeseva.vercel.app/image-compressor - Compress JPG, PNG and WEBP images to exact KB limits
 - https://freeseva.vercel.app/pdf-compressor - Compress PDFs to 100KB, 200KB, 300KB or custom sizes
 - https://freeseva.vercel.app/signature-compressor - Compress signatures to 10KB, 20KB or custom limits
