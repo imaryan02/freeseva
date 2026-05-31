@@ -123,7 +123,7 @@ export const Home: React.FC = () => {
               </div>
             </div>
 
-            <div className="relative z-10 mx-auto min-h-[340px] w-full max-w-[640px] select-none md:min-h-[430px] lg:max-w-[680px]">
+            <div className="relative z-10 mx-auto min-h-[340px] w-full max-w-[640px] select-none md:min-h-[430px] lg:max-w-[760px]">
               <div className="absolute inset-x-2 top-8 h-72 rounded-full border border-white/70 bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.20),rgba(59,130,246,0.11)_48%,transparent_70%)] shadow-[0_0_90px_rgba(139,92,246,0.20)] md:inset-x-6 md:h-80" />
               <div className="absolute left-1/2 top-1/2 flex h-80 w-80 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[3rem] bg-white/45 shadow-[0_30px_90px_rgba(74,103,170,0.18)] backdrop-blur-sm md:h-[25rem] md:w-[25rem] xl:h-[27rem] xl:w-[27rem]">
                 <img
@@ -135,10 +135,10 @@ export const Home: React.FC = () => {
               </div>
 
               {[
-                { label: 'Fast', sub: 'Quick tools', icon: <Zap className="h-5 w-5 text-violet-600" />, pos: 'left-2 top-4 xl:left-0 xl:top-12' },
-                { label: 'Private', sub: 'Browser local', icon: <Lock className="h-5 w-5 text-navy-700" />, pos: 'right-2 top-8 xl:right-0 xl:top-20' },
-                { label: 'Easy', sub: 'One click', icon: <MousePointerClick className="h-5 w-5 text-navy-700" />, pos: 'left-2 bottom-4 xl:left-0 xl:bottom-12' },
-                { label: 'Community', sub: 'Free service', icon: <HeartHandshake className="h-5 w-5 text-navy-700" />, pos: 'right-2 bottom-4 xl:right-0 xl:bottom-10' },
+                { label: 'Fast', sub: 'Quick tools', icon: <Zap className="h-5 w-5 text-violet-600" />, pos: '-left-4 top-2 lg:-left-7 lg:top-10 xl:-left-10 xl:top-12' },
+                { label: 'Private', sub: 'Browser local', icon: <Lock className="h-5 w-5 text-navy-700" />, pos: '-right-4 top-10 lg:-right-7 lg:top-20 xl:-right-10 xl:top-22' },
+                { label: 'Easy', sub: 'One click', icon: <MousePointerClick className="h-5 w-5 text-navy-700" />, pos: '-left-4 bottom-2 lg:-left-7 lg:bottom-12 xl:-left-10 xl:bottom-14' },
+                { label: 'Community', sub: 'Free service', icon: <HeartHandshake className="h-5 w-5 text-navy-700" />, pos: '-right-4 bottom-2 lg:-right-7 lg:bottom-10 xl:-right-10 xl:bottom-12' },
               ].map((badge) => (
                 <div
                   key={badge.label}
