@@ -1,8 +1,4 @@
-export interface WhiteningOptions {
-  mode: 'lightness' | 'chromakey';
-  tolerance: number; // 0-100 threshold
-  targetColor?: { r: number; g: number; b: number }; // color picked by user
-}
+import { removeBackground, preload, type Config } from '@imgly/background-removal';
 
 export interface WhiteningResult {
   file: File;
@@ -10,93 +6,72 @@ export interface WhiteningResult {
   fileSize: number;
 }
 
+type ProgressCallback = (phase: string, pct: number) => void;
+
 export class BackgroundWhiteEngine {
+  public static preloaded = false;
+  private static preloadPromise: Promise<void> | null = null;
+
   /**
-   * Cleans background tints or custom colors and replaces them with pure white (#FFFFFF)
+   * Preload the AI model so it's warm when the user uploads a photo.
+   * Call this on component mount. Downloads ~20MB on first use, cached after.
    */
-  static async whiten(file: File, options: WhiteningOptions): Promise<WhiteningResult> {
-    const img = await this.loadImage(file);
-    const canvas = document.createElement('canvas');
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    const ctx = canvas.getContext('2d');
+  static preload(onProgress?: ProgressCallback): Promise<void> {
+    if (this.preloaded) return Promise.resolve();
 
-    if (!ctx) {
-      throw new Error('Canvas 2D context could not be created for whitening');
+    if (!this.preloadPromise) {
+      const config: Config = {
+        device: 'gpu',
+        proxyToWorker: true,
+        progress: (key, current, total) => {
+          if (onProgress && total > 0) {
+            const pct = Math.round((current / total) * 100);
+            onProgress(key, pct);
+          }
+        },
+      };
+
+      this.preloadPromise = preload(config)
+        .then(() => {
+          this.preloaded = true;
+        })
+        .catch((err) => {
+          console.warn('Background removal model preload failed:', err);
+          this.preloadPromise = null;
+        });
     }
 
-    ctx.drawImage(img, 0, 0);
+    return this.preloadPromise;
+  }
 
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imageData.data;
+  /**
+   * Remove the background from an image and replace with solid white.
+   * Uses ISNet AI model via ONNX Runtime Web (WebGPU preferred, WASM fallback).
+   */
+  static async whiten(
+    file: File,
+    onProgress?: ProgressCallback
+  ): Promise<WhiteningResult> {
+    // Ensure model is loaded
+    await this.preload(onProgress);
 
-    if (options.mode === 'lightness') {
-      // Lightness mode: convert all light-gray/off-white pixels above threshold to pure white
-      // Higher tolerance value = lower threshold (sweeps more dark values to white)
-      const threshold = 255 - (options.tolerance / 100) * 150; // maps tolerance to 105-255 brightness
+    // Step 1: AI background removal → transparent foreground PNG blob
+    const config: Config = {
+      device: 'gpu',
+      proxyToWorker: true,
+      output: {
+        format: 'image/png',
+        quality: 1.0,
+      },
+    };
 
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        const a = data[i + 3];
+    const foregroundBlob = await removeBackground(file, config);
 
-        if (a === 0) {
-          // If transparent, paint it white
-          data[i] = 255;
-          data[i + 1] = 255;
-          data[i + 2] = 255;
-          data[i + 3] = 255;
-          continue;
-        }
+    // Step 2: Composite foreground onto white canvas + post-process
+    const resultCanvas = await this.compositeOnWhite(foregroundBlob);
 
-        // Grayscale lightness value
-        const lightness = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-
-        if (lightness >= threshold) {
-          data[i] = 255;
-          data[i + 1] = 255;
-          data[i + 2] = 255;
-        }
-      }
-    } else if (options.mode === 'chromakey' && options.targetColor) {
-      // Chroma-key mode: convert any pixel close to selected color within tolerance to pure white
-      const target = options.targetColor;
-      const toleranceDist = (options.tolerance / 100) * 441.67; // 441.67 is max color distance in RGB cube
-
-      for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        const a = data[i + 3];
-
-        if (a === 0) {
-          data[i] = 255;
-          data[i + 1] = 255;
-          data[i + 2] = 255;
-          data[i + 3] = 255;
-          continue;
-        }
-
-        // Euclidean distance in RGB space
-        const dist = Math.sqrt(
-          Math.pow(r - target.r, 2) +
-          Math.pow(g - target.g, 2) +
-          Math.pow(b - target.b, 2)
-        );
-
-        if (dist <= toleranceDist) {
-          data[i] = 255;
-          data[i + 1] = 255;
-          data[i + 2] = 255;
-        }
-      }
-    }
-
-    ctx.putImageData(imageData, 0, 0);
-
-    // Export to JPEG (JPG is standard for form uploads)
-    const blob = await this.canvasToBlob(canvas, 'image/jpeg');
+    // Step 3: Export as JPEG
+    const blob = await this.canvasToBlob(resultCanvas, 'image/jpeg', 0.95);
     const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
     const finalFile = new File([blob], `${baseName}_whitebg.jpg`, { type: 'image/jpeg' });
     const previewUrl = URL.createObjectURL(finalFile);
@@ -108,29 +83,170 @@ export class BackgroundWhiteEngine {
     };
   }
 
-  private static loadImage(file: File): Promise<HTMLImageElement> {
+  /**
+   * Composite a transparent foreground PNG onto a white canvas.
+   * Applies color decontamination and edge feathering for clean transitions.
+   */
+  private static async compositeOnWhite(foregroundBlob: Blob): Promise<HTMLCanvasElement> {
+    const img = await this.loadImageFromBlob(foregroundBlob);
+    const width = img.naturalWidth;
+    const height = img.naturalHeight;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      throw new Error('Canvas 2D context could not be created');
+    }
+
+    // Fill white background
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, width, height);
+
+    // Draw foreground with alpha onto white
+    ctx.drawImage(img, 0, 0);
+
+    // Post-processing: decontaminate edges and feather
+    const imageData = ctx.getImageData(0, 0, width, height);
+    this.decontaminateEdges(imageData, width, height);
+    ctx.putImageData(imageData, 0, 0);
+
+    return canvas;
+  }
+
+  /**
+   * Color decontamination: At the boundary between the foreground subject and
+   * the white background, original background color can "bleed" into edge pixels.
+   * This method detects semi-transparent edge pixels from the composited result
+   * and smooths the transition by blending toward the nearest interior foreground color.
+   *
+   * We work on the already-composited image (foreground on white), so we detect
+   * "edge" pixels by finding foreground pixels that have at least one neighbor
+   * that's near-white (background). For those edge pixels, we pull their color
+   * slightly toward the average of their non-white neighbors to remove halos.
+   */
+  private static decontaminateEdges(
+    imageData: ImageData,
+    width: number,
+    height: number
+  ): void {
+    const data = imageData.data;
+    const isBackground = new Uint8Array(width * height);
+
+    // Step 1: classify pixels as background (near-white) or foreground
+    for (let i = 0; i < width * height; i++) {
+      const offset = i * 4;
+      const r = data[offset];
+      const g = data[offset + 1];
+      const b = data[offset + 2];
+      // A pixel is "background" if it's very close to white
+      if (r >= 248 && g >= 248 && b >= 248) {
+        isBackground[i] = 1;
+      }
+    }
+
+    // Step 2: find edge foreground pixels (foreground with at least one bg neighbor)
+    // and blend them toward their foreground-only neighbors to remove color halo
+    const edgePixels: Array<{ index: number; avgR: number; avgG: number; avgB: number; blend: number }> = [];
+
+    for (let y = 1; y < height - 1; y++) {
+      for (let x = 1; x < width - 1; x++) {
+        const idx = y * width + x;
+        if (isBackground[idx] === 1) continue; // skip pure bg
+
+        let bgNeighborCount = 0;
+        let fgSumR = 0, fgSumG = 0, fgSumB = 0;
+        let fgCount = 0;
+
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            if (dx === 0 && dy === 0) continue;
+            const nIdx = (y + dy) * width + (x + dx);
+            if (isBackground[nIdx] === 1) {
+              bgNeighborCount++;
+            } else {
+              const nOff = nIdx * 4;
+              fgSumR += data[nOff];
+              fgSumG += data[nOff + 1];
+              fgSumB += data[nOff + 2];
+              fgCount++;
+            }
+          }
+        }
+
+        // Edge pixel: has both bg and fg neighbors
+        if (bgNeighborCount > 0 && fgCount > 0) {
+          // Blend strength based on how many bg neighbors (more bg = stronger blend)
+          const blend = Math.min(0.6, bgNeighborCount * 0.08);
+          edgePixels.push({
+            index: idx,
+            avgR: fgSumR / fgCount,
+            avgG: fgSumG / fgCount,
+            avgB: fgSumB / fgCount,
+            blend,
+          });
+        }
+      }
+    }
+
+    // Step 3: apply the decontamination blend
+    for (const ep of edgePixels) {
+      const offset = ep.index * 4;
+      data[offset] = Math.round(data[offset] * (1 - ep.blend) + ep.avgR * ep.blend);
+      data[offset + 1] = Math.round(data[offset + 1] * (1 - ep.blend) + ep.avgG * ep.blend);
+      data[offset + 2] = Math.round(data[offset + 2] * (1 - ep.blend) + ep.avgB * ep.blend);
+    }
+  }
+
+  /**
+   * Load an image from a Blob.
+   */
+  private static loadImageFromBlob(blob: Blob): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error('Whitening failed loading image element'));
-        img.src = e.target?.result as string;
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve(img);
       };
-      reader.onerror = () => reject(new Error('Whitening failed reading file'));
-      reader.readAsDataURL(file);
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Failed to load foreground image'));
+      };
+      img.src = url;
     });
   }
 
-  private static canvasToBlob(canvas: HTMLCanvasElement, mimeType: string): Promise<Blob> {
+  /**
+   * Convert canvas to Blob.
+   */
+  private static canvasToBlob(
+    canvas: HTMLCanvasElement,
+    mimeType: string,
+    quality: number
+  ): Promise<Blob> {
     return new Promise((resolve, reject) => {
-      canvas.toBlob((blob) => {
-        if (blob) {
-          resolve(blob);
-        } else {
-          reject(new Error('Whitening exporting failed'));
-        }
-      }, mimeType, 0.95);
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Canvas export failed'));
+          }
+        },
+        mimeType,
+        quality
+      );
     });
+  }
+
+  /**
+   * Dispose/reset cached state.
+   */
+  static dispose(): void {
+    this.preloaded = false;
+    this.preloadPromise = null;
   }
 }
