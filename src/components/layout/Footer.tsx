@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldAlert, Zap, Globe } from 'lucide-react';
+import { Mail, ShieldAlert, Zap, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const Footer: React.FC = () => {
@@ -8,7 +8,7 @@ export const Footer: React.FC = () => {
   return (
     <footer className="bg-navy-950 text-navy-200 border-t border-navy-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 mb-10 border-b border-navy-800 pb-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-10 mb-10 border-b border-navy-800 pb-10">
           <div>
             <span className="font-extrabold text-xl tracking-tight text-white font-display">
               free<span className="text-brand-400">Seva</span>
@@ -47,6 +47,30 @@ export const Footer: React.FC = () => {
               <Link to="/form-helper" className="hover:text-brand-400 text-brand-500 font-semibold transition-colors">Form Helper</Link>
             </div>
           </div>
+
+          <div>
+            <h3 className="text-xs font-semibold text-white uppercase tracking-wider mb-4">
+              Connect
+            </h3>
+            <div className="space-y-2.5 text-xs text-navy-400">
+              <a
+                href="https://www.linkedin.com/in/imaryan02/"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 transition-colors hover:text-brand-400"
+              >
+                <Globe className="h-4 w-4 text-brand-400 flex-shrink-0" />
+                <span>LinkedIn</span>
+              </a>
+              <a
+                href="mailto:aryan.official02@gmail.com"
+                className="flex items-center gap-2 transition-colors hover:text-brand-400"
+              >
+                <Mail className="h-4 w-4 text-brand-400 flex-shrink-0" />
+                <span>aryan.official02@gmail.com</span>
+              </a>
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-navy-500">
@@ -54,8 +78,17 @@ export const Footer: React.FC = () => {
             <Globe className="h-3.5 w-3.5" />
             <span>Built 100% serverless. Proudly private.</span>
           </div>
-          <div>
-            &copy; {currentYear} freeSeva. All rights reserved.
+          <div className="flex flex-col items-center gap-2 sm:items-end">
+            <a
+              href="https://www.linkedin.com/in/imaryan02/"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 font-semibold text-navy-300 transition-colors hover:text-brand-400"
+            >
+              <Globe className="h-3.5 w-3.5" />
+              <span>Developed by Aryan Gupta</span>
+            </a>
+            <span>&copy; {currentYear} freeSeva. All rights reserved.</span>
           </div>
         </div>
       </div>

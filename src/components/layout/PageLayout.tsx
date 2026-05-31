@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import sidebarLockImg from '../../assets/sidebar_lock.png';
+import { Footer } from './Footer';
 import {
   ArrowLeft,
   Download,
@@ -21,6 +21,11 @@ interface PageLayoutProps {
   seoTitle?: string;
 }
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
+}
+
 export const PageLayout: React.FC<PageLayoutProps> = ({
   children,
   title,
@@ -30,15 +35,43 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
     document.title = seoTitle || `${title ? `${title} | ` : ''}freeSeva - 100% Free Form Assistant`;
     window.scrollTo(0, 0);
   }, [title, seoTitle]);
 
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (event: Event) => {
+      event.preventDefault();
+      setInstallPrompt(event as BeforeInstallPromptEvent);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const handleInstallClick = async () => {
+    if (!installPrompt) {
+      showToast('Install from your browser menu: open menu (...) and choose Add to Home Screen or Install app.');
+      return;
+    }
+
+    await installPrompt.prompt();
+    const choice = await installPrompt.userChoice;
+    setInstallPrompt(null);
+
+    showToast(
+      choice.outcome === 'accepted'
+        ? 'freeSeva is being added to your home screen.'
+        : 'Install cancelled. You can add freeSeva later from the browser menu.'
+    );
   };
 
   const navItems = [
@@ -115,15 +148,30 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
       </nav>
 
       <div className="p-4">
-        <div className="relative overflow-hidden bg-gradient-to-b from-white to-emerald-50/70 border border-emerald-100 rounded-2xl p-4 flex flex-col items-center text-center shadow-sm select-none group">
-          <div className="absolute top-0 right-0 translate-x-3 -translate-y-3 w-16 h-16 bg-brand-100/50 rounded-full blur-lg pointer-events-none group-hover:scale-110 transition-transform" />
-          <div className="relative h-14 w-14 flex items-center justify-center mb-3 animate-float-fast drop-shadow-sm select-none pointer-events-none">
-            <img src={sidebarLockImg} alt="Secure local processing" className="w-full h-full object-contain" />
+        <div className="relative overflow-hidden rounded-3xl border border-emerald-100 bg-[radial-gradient(circle_at_50%_0%,rgba(16,185,129,0.16),transparent_42%),linear-gradient(180deg,#ffffff_0%,#effdf6_100%)] p-4 text-center shadow-sm select-none group">
+          <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-emerald-300/25 blur-2xl transition-transform group-hover:scale-110" />
+          <div className="absolute -bottom-10 left-1/2 h-20 w-32 -translate-x-1/2 rounded-full bg-sky-200/25 blur-2xl" />
+          <div className="relative mx-auto mb-3 flex h-16 w-16 items-center justify-center">
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-emerald-400 to-sky-500 opacity-15 blur-md" />
+            <div className="absolute h-13 w-13 rotate-[-8deg] rounded-2xl border border-emerald-200 bg-white shadow-lg" />
+            <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/20">
+              <ShieldCheck className="h-7 w-7" />
+            </div>
+            <span className="absolute -right-1 bottom-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-emerald-300 text-[9px] font-black text-emerald-950">
+              OK
+            </span>
           </div>
-          <h4 className="text-[11px] font-extrabold text-navy-850 uppercase tracking-wide">100% Private</h4>
-          <p className="text-[10px] text-navy-450 mt-1 font-semibold leading-relaxed">
-            Files stay on your device. No login, no upload queue, no tracking.
+          <h4 className="relative text-[12px] font-black text-navy-950 uppercase tracking-wide">100% Private</h4>
+          <p className="relative mx-auto mt-1 max-w-38 text-[10px] text-navy-500 font-bold leading-relaxed">
+            Browser-only tools. Files never leave your device.
           </p>
+          <div className="relative mt-3 flex justify-center gap-1.5">
+            {['Local', 'No login'].map((item) => (
+              <span key={item} className="rounded-full bg-white px-2.5 py-1 text-[9px] font-black text-emerald-700 shadow-sm ring-1 ring-emerald-100">
+                {item}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -195,12 +243,26 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
+            <div className="hidden xl:flex items-center gap-2 rounded-full border border-navy-100 bg-white px-2 py-1 shadow-sm">
+              <span className="pl-2 text-[10px] font-black text-navy-600">
+                Developed by <span className="text-navy-950">Aryan</span>
+              </span>
+              <a
+                href="https://www.linkedin.com/in/imaryan02/"
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-full bg-[#0a66c2] px-3 py-1.5 text-[10px] font-black text-white shadow-sm transition hover:bg-[#084f96] active:scale-95"
+              >
+                LinkedIn
+              </a>
+            </div>
+
             <button
-              onClick={() => showToast('Install freeSeva from your browser menu with Add to Home Screen.')}
+              onClick={handleInstallClick}
               className="hidden sm:flex px-4 py-2 text-[10px] font-black tracking-wide text-navy-700 bg-white border border-navy-200 rounded-full hover:bg-navy-50 active:scale-95 transition-all items-center gap-2 shadow-sm"
             >
               <Download className="h-3.5 w-3.5" />
-              <span>Add to Home Screen</span>
+              <span>{installPrompt ? 'Install App' : 'Add to Home Screen'}</span>
             </button>
 
             <button
@@ -213,6 +275,20 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
             </button>
           </div>
         </header>
+
+        <div className="flex items-center justify-center gap-2 border-b border-navy-100/60 bg-white/55 px-4 py-2 backdrop-blur-xl xl:hidden">
+          <span className="text-[10px] font-black text-navy-500">
+            Developed by <span className="text-navy-950">Aryan</span>
+          </span>
+          <a
+            href="https://www.linkedin.com/in/imaryan02/"
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-full bg-[#0a66c2] px-3 py-1 text-[10px] font-black text-white shadow-sm transition hover:bg-[#084f96] active:scale-95"
+          >
+            LinkedIn
+          </a>
+        </div>
 
         <main className="flex-grow py-6 px-4 sm:px-6 lg:px-8">
           {(title || description) && (
@@ -232,6 +308,8 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
 
           <div className="animate-fadeIn">{children}</div>
         </main>
+
+        <Footer />
       </div>
     </div>
   );

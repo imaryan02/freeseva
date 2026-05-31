@@ -1,0 +1,18 @@
+{
+  "name": "freeSeva",
+  "short_name": "freeSeva",
+  "description": "Free browser-local tools to prepare photos, signatures and PDFs for forms.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#16a34a",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
