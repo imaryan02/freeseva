@@ -298,5 +298,5 @@ export const getSiteOrigin = (): string => {
   const configured = import.meta.env.VITE_SITE_URL as string | undefined;
   if (configured) return configured.replace(/\/$/, '');
   if (typeof window !== 'undefined') return window.location.origin;
-  return 'https://freeseva.in';
+  return 'https://freeseva.vercel.app';
 };
