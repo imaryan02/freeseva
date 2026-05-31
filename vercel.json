@@ -10,6 +10,17 @@
       ],
       "destination": "https://freeseva.org/$1",
       "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.freeseva.org"
+        }
+      ],
+      "destination": "https://freeseva.org/$1",
+      "permanent": true
     }
   ],
   "rewrites": [

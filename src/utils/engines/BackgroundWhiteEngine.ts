@@ -11,6 +11,46 @@ type ProgressCallback = (phase: string, pct: number) => void;
 export class BackgroundWhiteEngine {
   public static preloaded = false;
   private static preloadPromise: Promise<void> | null = null;
+  private static activeDevice: 'gpu' | 'cpu' | null = null;
+
+  private static getPreferredDevice(): 'gpu' | 'cpu' {
+    return typeof navigator !== 'undefined' && 'gpu' in navigator ? 'gpu' : 'cpu';
+  }
+
+  private static createConfig(
+    device: 'gpu' | 'cpu',
+    onProgress?: ProgressCallback,
+    includeOutput = false
+  ): Config {
+    return {
+      device,
+      proxyToWorker: false,
+      model: device === 'gpu' ? 'isnet_fp16' : 'isnet_quint8',
+      ...(includeOutput
+        ? {
+            output: {
+              format: 'image/png',
+              quality: 1.0,
+            },
+          }
+        : {}),
+      progress: (key, current, total) => {
+        if (onProgress && total > 0) {
+          const pct = Math.round((current / total) * 100);
+          onProgress(key, pct);
+        }
+      },
+    };
+  }
+
+  private static async preloadDevice(
+    device: 'gpu' | 'cpu',
+    onProgress?: ProgressCallback
+  ): Promise<void> {
+    await preload(this.createConfig(device, onProgress));
+    this.activeDevice = device;
+    this.preloaded = true;
+  }
 
   /**
    * Preload the AI model so it's warm when the user uploads a photo.
@@ -20,24 +60,21 @@ export class BackgroundWhiteEngine {
     if (this.preloaded) return Promise.resolve();
 
     if (!this.preloadPromise) {
-      const config: Config = {
-        device: 'gpu',
-        proxyToWorker: true,
-        progress: (key, current, total) => {
-          if (onProgress && total > 0) {
-            const pct = Math.round((current / total) * 100);
-            onProgress(key, pct);
-          }
-        },
-      };
+      const preferredDevice = this.getPreferredDevice();
+      const fallbackDevice = preferredDevice === 'gpu' ? 'cpu' : null;
 
-      this.preloadPromise = preload(config)
-        .then(() => {
-          this.preloaded = true;
-        })
-        .catch((err) => {
-          console.warn('Background removal model preload failed:', err);
+      this.preloadPromise = this.preloadDevice(preferredDevice, onProgress)
+        .catch(async (err) => {
+          console.warn(`${preferredDevice.toUpperCase()} background model preload failed:`, err);
+
+          if (fallbackDevice) {
+            onProgress?.('Switching to CPU fallback', 5);
+            await this.preloadDevice(fallbackDevice, onProgress);
+            return;
+          }
+
           this.preloadPromise = null;
+          throw err;
         });
     }
 
@@ -56,16 +93,22 @@ export class BackgroundWhiteEngine {
     await this.preload(onProgress);
 
     // Step 1: AI background removal → transparent foreground PNG blob
-    const config: Config = {
-      device: 'gpu',
-      proxyToWorker: true,
-      output: {
-        format: 'image/png',
-        quality: 1.0,
-      },
-    };
+    let foregroundBlob: Blob;
+    const firstDevice = this.activeDevice || this.getPreferredDevice();
 
-    const foregroundBlob = await removeBackground(file, config);
+    try {
+      foregroundBlob = await removeBackground(file, this.createConfig(firstDevice, onProgress, true));
+    } catch (err) {
+      if (firstDevice === 'cpu') {
+        throw err;
+      }
+
+      console.warn('GPU background removal failed, retrying on CPU:', err);
+      this.preloaded = false;
+      this.preloadPromise = null;
+      await this.preloadDevice('cpu', onProgress);
+      foregroundBlob = await removeBackground(file, this.createConfig('cpu', onProgress, true));
+    }
 
     // Step 2: Composite foreground onto white canvas + post-process
     const resultCanvas = await this.compositeOnWhite(foregroundBlob);
@@ -248,5 +291,6 @@ export class BackgroundWhiteEngine {
   static dispose(): void {
     this.preloaded = false;
     this.preloadPromise = null;
+    this.activeDevice = null;
   }
 }

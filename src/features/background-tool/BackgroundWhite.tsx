@@ -368,9 +368,9 @@ export const BackgroundWhite: React.FC = () => {
               <div className="flex items-start gap-3">
                 <Zap className="h-5 w-5 text-violet-650 flex-shrink-0 mt-0.5" />
                 <div>
-                  <h4 className="text-xs font-bold text-violet-850">⚡ WebGPU Accelerated</h4>
+                  <h4 className="text-xs font-bold text-violet-850">Local AI Processing</h4>
                   <p className="text-[11px] text-violet-750 font-semibold leading-normal mt-0.5">
-                    Leverages local GPU acceleration for instant cutout segmentation (under 3 seconds).
+                    Uses GPU acceleration when available and falls back to CPU processing on unsupported browsers.
                   </p>
                 </div>
               </div>
@@ -511,7 +511,7 @@ export const BackgroundWhite: React.FC = () => {
               {/* Model Status Banner */}
               <div className="flex items-center justify-center gap-2 mt-6 p-3 border border-emerald-100 bg-emerald-50/50 rounded-xl text-xs font-semibold text-emerald-800 select-none max-w-md mx-auto">
                 <Zap className="h-4 w-4 text-emerald-600 flex-shrink-0" />
-                <span>AI Model Ready — backgrounds will be removed instantly</span>
+                <span>AI Model Ready - backgrounds will be removed locally</span>
               </div>
 
               <div className="flex items-center justify-center gap-2 mt-3 p-3 bg-brand-50/50 border border-brand-100 rounded-xl text-brand-800 text-xs font-semibold select-none max-w-md mx-auto">
@@ -731,7 +731,7 @@ export const BackgroundWhite: React.FC = () => {
                     <Zap className="h-4 w-4 text-emerald-600" />
                     <div>
                       <span className="font-bold block">ISNet Model Ready</span>
-                      <span className="text-[10px] text-emerald-600 leading-snug block">WebGPU accelerated • Cached locally</span>
+                      <span className="text-[10px] text-emerald-600 leading-snug block">GPU when available - CPU fallback - cached locally</span>
                     </div>
                   </div>
                 </Card>
