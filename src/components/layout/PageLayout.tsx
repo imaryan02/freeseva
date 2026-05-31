@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Footer } from './Footer';
+import { getSeoPage, getSiteOrigin } from '../../utils/seo';
 import {
   ArrowLeft,
   Download,
@@ -36,11 +37,137 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const seoPage = getSeoPage(location.pathname);
+  const pageTitle = seoTitle || seoPage.title || `${title ? `${title} | ` : ''}freeSeva - 100% Free Form Assistant`;
+  const pageDescription = seoPage.description || description || 'Free privacy-first browser tools to prepare images, signatures and PDFs for forms.';
+  const canonicalUrl = `${getSiteOrigin()}${seoPage.path}`;
+  const shareImageUrl = `${getSiteOrigin()}/freeseva.png`;
 
   useEffect(() => {
-    document.title = seoTitle || `${title ? `${title} | ` : ''}freeSeva - 100% Free Form Assistant`;
+    const setMeta = (name: string, content: string, attr: 'name' | 'property' = 'name') => {
+      let element = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${name}"]`);
+      if (!element) {
+        element = document.createElement('meta');
+        element.setAttribute(attr, name);
+        document.head.appendChild(element);
+      }
+      element.content = content;
+    };
+
+    const setLink = (rel: string, href: string) => {
+      let element = document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
+      if (!element) {
+        element = document.createElement('link');
+        element.rel = rel;
+        document.head.appendChild(element);
+      }
+      element.href = href;
+    };
+
+    document.title = pageTitle;
+    setMeta('description', pageDescription);
+    setMeta('keywords', seoPage.keywords.join(', '));
+    setMeta('robots', 'index, follow, max-image-preview:large');
+    setMeta('og:title', pageTitle, 'property');
+    setMeta('og:description', pageDescription, 'property');
+    setMeta('og:type', 'website', 'property');
+    setMeta('og:url', canonicalUrl, 'property');
+    setMeta('og:site_name', 'freeSeva', 'property');
+    setMeta('og:image', shareImageUrl, 'property');
+    setMeta('og:image:secure_url', shareImageUrl, 'property');
+    setMeta('og:image:alt', 'freeSeva free PDF, image and signature tools', 'property');
+    setMeta('twitter:card', 'summary_large_image');
+    setMeta('twitter:title', pageTitle);
+    setMeta('twitter:description', pageDescription);
+    setMeta('twitter:image', shareImageUrl);
+    setLink('canonical', canonicalUrl);
+
+    document.head.querySelectorAll('script[data-freeseva-schema="true"]').forEach((node) => node.remove());
+
+    const schemaGraph = {
+      '@context': 'https://schema.org',
+      '@graph': [
+        {
+          '@type': 'Organization',
+          '@id': `${getSiteOrigin()}/#organization`,
+          name: 'freeSeva',
+          url: getSiteOrigin(),
+          founder: {
+            '@type': 'Person',
+            name: 'Aryan Gupta',
+            sameAs: 'https://www.linkedin.com/in/imaryan02/',
+          },
+          image: shareImageUrl,
+        },
+        {
+          '@type': 'WebSite',
+          '@id': `${getSiteOrigin()}/#website`,
+          name: 'freeSeva',
+          url: getSiteOrigin(),
+          description: 'Free browser-local PDF, image and signature tools for forms, exams and job portals.',
+          publisher: { '@id': `${getSiteOrigin()}/#organization` },
+          potentialAction: {
+            '@type': 'SearchAction',
+            target: `${getSiteOrigin()}/?q={search_term_string}`,
+            'query-input': 'required name=search_term_string',
+          },
+        },
+        {
+          '@type': 'WebApplication',
+          '@id': `${canonicalUrl}#webapp`,
+          name: seoPage.h1,
+          url: canonicalUrl,
+          applicationCategory: 'UtilitiesApplication',
+          operatingSystem: 'Any',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+          description: pageDescription,
+          image: shareImageUrl,
+          browserRequirements: 'Requires JavaScript and a modern browser.',
+          featureList: seoPage.useCases,
+        },
+        {
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            {
+              '@type': 'ListItem',
+              position: 1,
+              name: 'Home',
+              item: `${getSiteOrigin()}/`,
+            },
+            ...(seoPage.path === '/'
+              ? []
+              : [
+                  {
+                    '@type': 'ListItem',
+                    position: 2,
+                    name: seoPage.h1,
+                    item: canonicalUrl,
+                  },
+                ]),
+          ],
+        },
+        {
+          '@type': 'FAQPage',
+          mainEntity: seoPage.faqs.map((faq) => ({
+            '@type': 'Question',
+            name: faq.question,
+            acceptedAnswer: {
+              '@type': 'Answer',
+              text: faq.answer,
+            },
+          })),
+        },
+      ],
+    };
+
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.dataset.freesevaSchema = 'true';
+    script.textContent = JSON.stringify(schemaGraph);
+    document.head.appendChild(script);
+
     window.scrollTo(0, 0);
-  }, [title, seoTitle]);
+  }, [canonicalUrl, pageDescription, pageTitle, seoPage, shareImageUrl]);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (event: Event) => {
@@ -236,6 +363,10 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 flex-shrink-0" />
               <span>100% Private - Browser Local</span>
             </div>
+            <div className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-white border border-navy-100 text-navy-700 text-[10px] font-extrabold rounded-full shadow-sm">
+              <span>Made in India</span>
+              <span aria-label="India flag" role="img">🇮🇳</span>
+            </div>
           </div>
 
           <div className="absolute left-1/2 -translate-x-1/2 lg:hidden">
@@ -277,6 +408,9 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
         </header>
 
         <div className="flex items-center justify-center gap-2 border-b border-navy-100/60 bg-white/55 px-4 py-2 backdrop-blur-xl xl:hidden">
+          <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-navy-700 shadow-sm ring-1 ring-navy-100">
+            Made in India 🇮🇳
+          </span>
           <span className="text-[10px] font-black text-navy-500">
             Developed by <span className="text-navy-950">Aryan</span>
           </span>
@@ -307,6 +441,53 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
           )}
 
           <div className="animate-fadeIn">{children}</div>
+
+          <section className="mt-10 rounded-3xl border border-navy-100 bg-white/75 p-5 shadow-sm backdrop-blur md:p-7">
+            <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.18em] text-brand-700">
+                  Tool guide
+                </p>
+                <h2 className="mt-2 text-2xl font-black tracking-tight text-navy-950">
+                  {seoPage.h1}
+                </h2>
+                <p className="mt-3 text-sm font-semibold leading-relaxed text-navy-600">
+                  {seoPage.summary}
+                </p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {seoPage.keywords.slice(0, 6).map((keyword) => (
+                    <span
+                      key={keyword}
+                      className="rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-[10px] font-black text-emerald-700"
+                    >
+                      {keyword}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-navy-100 bg-navy-50/70 p-4">
+                <h3 className="text-sm font-black text-navy-950">Common use cases</h3>
+                <ul className="mt-3 space-y-2">
+                  {seoPage.useCases.map((useCase) => (
+                    <li key={useCase} className="flex gap-2 text-xs font-semibold leading-relaxed text-navy-600">
+                      <ShieldCheck className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-brand-600" />
+                      <span>{useCase}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-3 md:grid-cols-3">
+              {seoPage.faqs.map((faq) => (
+                <article key={faq.question} className="rounded-2xl border border-navy-100 bg-white p-4">
+                  <h3 className="text-xs font-black leading-snug text-navy-950">{faq.question}</h3>
+                  <p className="mt-2 text-[11px] font-semibold leading-relaxed text-navy-500">{faq.answer}</p>
+                </article>
+              ))}
+            </div>
+          </section>
         </main>
 
         <Footer />
