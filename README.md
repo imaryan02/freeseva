@@ -4,7 +4,7 @@ FreeSeva is a community-focused initiative offering free digital services for st
 
 The first live product is **Document Tools**: a privacy-first browser toolkit for preparing PDFs, images, signatures, and form-ready files.
 
-Production domain: `https://freeseva.org`
+Production domain: `https://www.freeseva.org`
 
 ## What FreeSeva Does Today
 
@@ -94,13 +94,10 @@ SEO files:
 Canonical domain:
 
 ```text
-https://freeseva.org
+https://www.freeseva.org
 ```
 
-The Vercel configuration redirects:
-
-- `freeseva.vercel.app/*` to `https://freeseva.org/*`
-- `www.freeseva.org/*` to `https://freeseva.org/*`
+Vercel currently redirects the apex domain `freeseva.org` to `www.freeseva.org`.
 
 ## Social Sharing And Icons
 
@@ -208,7 +205,7 @@ npm run build
 Recommended Vercel environment variable:
 
 ```text
-VITE_SITE_URL=https://freeseva.org
+VITE_SITE_URL=https://www.freeseva.org
 ```
 
 The app uses `BrowserRouter`, so Vercel rewrites are required for direct route refreshes. This is handled in `vercel.json`.
@@ -217,10 +214,10 @@ The app uses `BrowserRouter`, so Vercel rewrites are required for direct route r
 
 After deployment:
 
-- Add `https://freeseva.org` to Google Search Console.
-- Submit `https://freeseva.org/sitemap.xml`.
-- Confirm `https://freeseva.org/robots.txt` is reachable.
-- Confirm `https://freeseva.org/freeseva.png` is reachable for link previews.
+- Add `https://www.freeseva.org` to Google Search Console.
+- Submit `https://www.freeseva.org/sitemap.xml`.
+- Confirm `https://www.freeseva.org/robots.txt` is reachable.
+- Confirm `https://www.freeseva.org/freeseva.png` is reachable for link previews.
 - Inspect key URLs such as `/pdf-compressor`, `/image-compressor`, `/signature-compressor`, and `/image-to-pdf`.
 
 ## Development Priorities

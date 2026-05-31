@@ -3,17 +3,17 @@
 freeSeva is a free digital services community initiative for students, professionals and everyday users. Its first available service is Document Tools for preparing photos, signatures and PDFs for online forms, exam portals, job portals and government applications. More useful free product tools will be added over time.
 
 Important pages:
-- https://freeseva.org/ - FreeSeva homepage and mission
-- https://freeseva.org/document-tools - Document Tools overview
-- https://freeseva.org/image-compressor - Compress JPG, PNG and WEBP images to exact KB limits
-- https://freeseva.org/pdf-compressor - Compress PDFs to 100KB, 200KB, 300KB or custom sizes
-- https://freeseva.org/signature-compressor - Compress signatures to 10KB, 20KB or custom limits
-- https://freeseva.org/image-to-pdf - Convert images to a single PDF
-- https://freeseva.org/image-resizer - Resize images by pixels, cm or mm
-- https://freeseva.org/pdf-merge - Merge multiple PDF files
-- https://freeseva.org/pdf-split - Split PDF pages or page ranges
-- https://freeseva.org/white-background - Replace photo background with white
-- https://freeseva.org/form-helper - Prepare photos, signatures and PDFs together
+- https://www.freeseva.org/ - FreeSeva homepage and mission
+- https://www.freeseva.org/document-tools - Document Tools overview
+- https://www.freeseva.org/image-compressor - Compress JPG, PNG and WEBP images to exact KB limits
+- https://www.freeseva.org/pdf-compressor - Compress PDFs to 100KB, 200KB, 300KB or custom sizes
+- https://www.freeseva.org/signature-compressor - Compress signatures to 10KB, 20KB or custom limits
+- https://www.freeseva.org/image-to-pdf - Convert images to a single PDF
+- https://www.freeseva.org/image-resizer - Resize images by pixels, cm or mm
+- https://www.freeseva.org/pdf-merge - Merge multiple PDF files
+- https://www.freeseva.org/pdf-split - Split PDF pages or page ranges
+- https://www.freeseva.org/white-background - Replace photo background with white
+- https://www.freeseva.org/form-helper - Prepare photos, signatures and PDFs together
 
 Privacy:
 Files are processed locally in the user's browser. No login is required for the utility tools.
