@@ -1,25 +1,37 @@
-# freeSeva
+# FreeSeva
 
-freeSeva is a free, privacy-first document utility app for preparing files used in government forms, job applications, admissions, exams, and everyday online submissions.
+FreeSeva is a community-focused initiative offering free digital services for students, professionals, applicants, and everyday users.
 
-The app is built around common user goals:
+The first live product is **Document Tools**: a privacy-first browser toolkit for preparing PDFs, images, signatures, and form-ready files.
 
-- Compress a photo to a required KB limit.
-- Compress a signature to 10KB or 20KB.
-- Resize photos to form dimensions.
-- Convert images and PDFs.
-- Merge, split, and compress PDFs.
-- Package photos, signatures, and documents together for form submission.
+Production domain: `https://freeseva.org`
+
+## What FreeSeva Does Today
+
+FreeSeva helps users complete common document tasks without mandatory signup or unnecessary uploads:
+
+- Compress PDFs for exam, job, admission, and government portals.
+- Compress images to common KB targets such as 20KB, 50KB, and 100KB.
+- Compress signatures to common limits such as 10KB and 20KB.
+- Resize photos by pixels, centimeters, or millimeters.
+- Crop photos for passport, square, or custom form sizes.
+- Convert images between JPG, PNG, and WEBP.
+- Convert images to PDF.
+- Merge and split PDF files.
+- Prepare photos, signatures, and PDFs together in the All-in-One Workspace.
+- Generate white-background photos with local AI background removal.
+
+More free product tools may be added over time, but the current production product is Document Tools.
 
 ## Privacy Model
 
-freeSeva is designed as a browser-first tool.
+FreeSeva is designed as a browser-first utility.
 
 - Files are processed locally in the user's browser whenever possible.
 - No account is required.
-- No mandatory server upload is used for the MVP.
 - No files are intentionally stored by the app.
 - Downloads are generated from browser memory using File, Blob, Canvas, PDF, and ZIP APIs.
+- Background removal uses local browser AI processing with GPU acceleration when available and CPU/WASM fallback when needed.
 
 ## Tech Stack
 
@@ -32,34 +44,79 @@ freeSeva is designed as a browser-first tool.
 - `browser-image-compression`
 - `pdf-lib`
 - `pdfjs-dist`
+- `@imgly/background-removal`
+- `onnxruntime-web`
 - `react-image-crop`
 - `jszip`
 - `lucide-react`
 
-## Features
+## Routes
 
-### Image Tools
+Core routes:
 
-- Image compressor
-- Signature compressor
-- Image resizer
-- Image cropper
-- White background generator
-- Image format converter
+- `/` - FreeSeva homepage and mission
+- `/document-tools` - Document Tools overview
+- `/form-helper` - All-in-One Workspace
 
-### PDF Tools
+Tool routes:
 
-- PDF compressor
-- Merge PDF
-- Split PDF
-- Images to PDF
+- `/pdf-compressor`
+- `/pdf-merge`
+- `/pdf-split`
+- `/image-compressor`
+- `/signature-compressor`
+- `/image-resizer`
+- `/image-cropper`
+- `/white-background`
+- `/image-converter`
+- `/image-to-pdf`
 
-### Form Helper
+## SEO Setup
 
-- All-in-one package workspace for photos, signatures, and documents.
-- Per-file size targets.
-- Per-file rename controls.
-- ZIP package download.
+The project follows an intent-page SEO pattern similar to major document utility platforms:
+
+- One route per tool intent.
+- Exact-match page titles and H1s for tool pages.
+- Route-specific descriptions, keywords, FAQs, use cases, how-to steps, and related tools.
+- Dynamic canonical tags and Open Graph/Twitter metadata.
+- FAQPage, HowTo, WebApplication, WebSite, Organization, and BreadcrumbList JSON-LD.
+- Sitemap and robots files for search engines.
+- `llms.txt` for AI/search crawlers.
+
+SEO files:
+
+- `src/utils/seo.ts`
+- `public/sitemap.xml`
+- `public/robots.txt`
+- `public/llms.txt`
+- `index.html`
+
+Canonical domain:
+
+```text
+https://freeseva.org
+```
+
+The Vercel configuration redirects:
+
+- `freeseva.vercel.app/*` to `https://freeseva.org/*`
+- `www.freeseva.org/*` to `https://freeseva.org/*`
+
+## Social Sharing And Icons
+
+Social preview image:
+
+```text
+public/freeseva.png
+```
+
+Favicon package:
+
+```text
+public/favicon_io_freeseva/
+```
+
+The main icon references are wired in `index.html` and `public/manifest.webmanifest`.
 
 ## Project Structure
 
@@ -83,15 +140,18 @@ src/
     pdf-split/
     signature-tool/
   routes/
+    Home.tsx
+    DocumentTools.tsx
   utils/
     engines/
+    seo.ts
 ```
 
 Important docs:
 
-- `freeSeva.md` contains the product requirements document.
-- `PROJECT_PLAN.md` tracks phased implementation work and progress.
-- `VALIDATION.md` contains manual test cases for processing engines and file workflows.
+- `freeSeva.md` contains product notes.
+- `PROJECT_PLAN.md` tracks phased implementation work.
+- `VALIDATION.md` contains manual validation cases for processing engines and file workflows.
 
 ## Local Setup
 
@@ -134,33 +194,9 @@ npm run preview
 | `npm run lint` | Run ESLint across the codebase. |
 | `npm run preview` | Preview the built app locally. |
 
-## Development Priorities
-
-Current priorities are tracked in `PROJECT_PLAN.md`.
-
-The main active themes are:
-
-- Keep processing local and private.
-- Make the user workflow simple for non-technical users.
-- Preserve document readability, especially for PDF compression.
-- Make mobile workflows reliable.
-- Keep build and lint checks passing.
-
-## PDF Compression Notes
-
-PDF compression is handled carefully because government forms often reject large files, but aggressive compression can make text unreadable.
-
-The current policy is quality-first:
-
-- Try structural PDF optimization first.
-- Preserve vector text where possible.
-- Use rasterization only when size targets require it.
-- Prefer readable output over maximum shrinking.
-- Avoid artificial file-size padding for PDFs.
-
 ## Deployment
 
-The app is intended to be deployable on Vercel's free tier.
+The app is configured for Vercel.
 
 Recommended deployment checks:
 
@@ -169,14 +205,29 @@ npm run lint
 npm run build
 ```
 
-The app currently uses `HashRouter`, which is friendly for static hosting because browser refreshes do not require custom route rewrites.
+Recommended Vercel environment variable:
 
-## Known Follow-Up Work
+```text
+VITE_SITE_URL=https://freeseva.org
+```
 
-- Finish real-file validation for PDF compression behavior.
-- Run the full validation checklist in `VALIDATION.md` with local non-private sample files.
-- Clean remaining encoding artifacts in UI/docs.
-- Add route-level lazy loading for heavy PDF features.
-- Add mobile UX polish for dense batch workspaces.
-- Add smoke tests for important routes and file workflows.
-- Replace advanced controls with simpler presets where possible.
+The app uses `BrowserRouter`, so Vercel rewrites are required for direct route refreshes. This is handled in `vercel.json`.
+
+## Search Console Checklist
+
+After deployment:
+
+- Add `https://freeseva.org` to Google Search Console.
+- Submit `https://freeseva.org/sitemap.xml`.
+- Confirm `https://freeseva.org/robots.txt` is reachable.
+- Confirm `https://freeseva.org/freeseva.png` is reachable for link previews.
+- Inspect key URLs such as `/pdf-compressor`, `/image-compressor`, `/signature-compressor`, and `/image-to-pdf`.
+
+## Development Priorities
+
+- Keep processing local and private.
+- Keep tool pages focused on exact user intent.
+- Preserve document readability, especially for PDF compression.
+- Keep mobile workflows reliable.
+- Improve real-file validation for heavy tools.
+- Keep `npm run lint` and `npm run build` passing before deployment.
