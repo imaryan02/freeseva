@@ -366,13 +366,13 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
               <Menu className="h-5 w-5" />
             </button>
 
-            {location.pathname !== '/' && (
+            {location.pathname !== '/document-tools' && (
               <Link
-                to="/"
+                to="/document-tools"
                 className="p-1.5 rounded-lg text-navy-500 hover:text-navy-900 hover:bg-navy-50 transition-colors border border-navy-150 flex items-center gap-1 text-[10px] font-bold"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
-                <span>Home</span>
+                <span>Dashboard</span>
               </Link>
             )}
 
