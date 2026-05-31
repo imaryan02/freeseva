@@ -159,6 +159,16 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
             },
           })),
         },
+        {
+          '@type': 'HowTo',
+          name: `How to use ${seoPage.h1}`,
+          description: pageDescription,
+          step: seoPage.howToSteps.map((step, index) => ({
+            '@type': 'HowToStep',
+            position: index + 1,
+            text: step,
+          })),
+        },
       ],
     };
 
@@ -486,7 +496,37 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
               </div>
             </div>
 
-            <div className="mt-6 grid gap-3 md:grid-cols-3">
+            <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_0.8fr]">
+              <div className="rounded-2xl border border-navy-100 bg-white p-4">
+                <h3 className="text-sm font-black text-navy-950">How to use this tool</h3>
+                <ol className="mt-3 space-y-2">
+                  {seoPage.howToSteps.map((step, index) => (
+                    <li key={step} className="flex gap-2 text-xs font-semibold leading-relaxed text-navy-600">
+                      <span className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-brand-50 text-[10px] font-black text-brand-700">
+                        {index + 1}
+                      </span>
+                      <span>{step}</span>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              <div className="rounded-2xl border border-navy-100 bg-navy-50/70 p-4">
+                <h3 className="text-sm font-black text-navy-950">Related tools</h3>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {seoPage.relatedTools.map((tool) => (
+                    <span
+                      key={tool}
+                      className="rounded-full border border-white bg-white px-3 py-1.5 text-[10px] font-black text-navy-700 shadow-sm"
+                    >
+                      {tool}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
               {seoPage.faqs.map((faq) => (
                 <article key={faq.question} className="rounded-2xl border border-navy-100 bg-white p-4">
                   <h3 className="text-xs font-black leading-snug text-navy-950">{faq.question}</h3>

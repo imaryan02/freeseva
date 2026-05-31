@@ -11,6 +11,8 @@ export interface SeoPage {
   keywords: string[];
   summary: string;
   useCases: string[];
+  howToSteps: string[];
+  relatedTools: string[];
   faqs: SeoFaq[];
 }
 
@@ -44,6 +46,12 @@ export const SEO_PAGES: Record<string, SeoPage> = {
       'Access privacy-first utilities for PDFs, photos and signatures.',
       'Start with Document Tools today and use more FreeSeva products as they are added.',
     ],
+    howToSteps: [
+      'Open the Document Tools section.',
+      'Choose the PDF, image, signature or all-in-one tool you need.',
+      'Process your file locally in the browser and download the result.',
+    ],
+    relatedTools: ['Document Tools', 'PDF Compressor', 'Image Compressor', 'Signature Compressor'],
     faqs: [
       commonPrivacyFaq,
       {
@@ -87,6 +95,13 @@ export const SEO_PAGES: Record<string, SeoPage> = {
       'Prepare signatures under common upload limits such as 10KB and 20KB.',
       'Convert JPG, PNG and WEBP images into PDF documents.',
     ],
+    howToSteps: [
+      'Choose the document tool that matches your task.',
+      'Upload or drop your PDF, image or signature file.',
+      'Set size, format or page options if needed.',
+      'Download the compressed, converted or form-ready file.',
+    ],
+    relatedTools: ['PDF Compressor', 'Image Compressor', 'Signature Compressor', 'Image to PDF'],
     faqs: [
       commonPrivacyFaq,
       {
@@ -102,11 +117,11 @@ export const SEO_PAGES: Record<string, SeoPage> = {
   },
   '/image-compressor': {
     path: '/image-compressor',
-    title: 'Free Image Compressor Online - Compress JPG, PNG, WEBP',
+    title: 'Image Compressor - Compress JPG, PNG, WEBP Online',
     description:
       'Compress JPG, PNG and WEBP images online to exact KB targets for forms. Reduce photos to 20KB, 50KB, 100KB or custom size locally in your browser.',
-    h1: 'Free image compressor for JPG, PNG and WEBP',
-    keywords: ['image compressor', 'compress image to 50kb', 'compress jpg', 'compress png', 'photo size reducer'],
+    h1: 'Image Compressor',
+    keywords: ['image compressor', 'compress image to 50kb', 'compress jpg', 'compress png', 'compress webp', 'photo size reducer', 'compress image to 20kb', 'compress image to 100kb'],
     summary:
       'Use the image compressor to reduce photo size for online forms while keeping control over target KB limits, output names and formats.',
     useCases: [
@@ -114,6 +129,13 @@ export const SEO_PAGES: Record<string, SeoPage> = {
       'Reduce JPG or PNG images to exact upload limits.',
       'Batch compress multiple images and download a ZIP.',
     ],
+    howToSteps: [
+      'Upload JPG, PNG or WEBP images.',
+      'Enter a target size such as 20KB, 50KB, 100KB or a custom limit.',
+      'Compress the image locally in your browser.',
+      'Download the optimized image or ZIP file.',
+    ],
+    relatedTools: ['Image Resizer', 'Image Crop Tool', 'White Background', 'Images to PDF'],
     faqs: [
       commonPrivacyFaq,
       {
@@ -128,11 +150,11 @@ export const SEO_PAGES: Record<string, SeoPage> = {
   },
   '/signature-compressor': {
     path: '/signature-compressor',
-    title: 'Free Signature Compressor - Compress Signature to 10KB or 20KB',
+    title: 'Signature Compressor - Compress Signature to 10KB or 20KB',
     description:
       'Compress scanned signatures for forms. Clean background noise, sharpen ink and reduce signature size below 10KB, 20KB or custom limits in your browser.',
-    h1: 'Free signature compressor for exam and job forms',
-    keywords: ['signature compressor', 'compress signature to 20kb', 'signature under 10kb', 'scan signature compressor'],
+    h1: 'Signature Compressor',
+    keywords: ['signature compressor', 'compress signature to 20kb', 'compress signature to 10kb', 'signature under 10kb', 'signature under 20kb', 'scan signature compressor', 'signature size reducer'],
     summary:
       'Prepare clean, form-ready signatures by reducing file size while preserving readable ink strokes and removing scanner noise.',
     useCases: [
@@ -140,6 +162,13 @@ export const SEO_PAGES: Record<string, SeoPage> = {
       'Reduce signature under 10KB for job applications.',
       'Clean scanned signature background before upload.',
     ],
+    howToSteps: [
+      'Upload your scanned signature image.',
+      'Choose a common target such as 10KB, 20KB or a custom size.',
+      'Let FreeSeva clean and compress the signature.',
+      'Download the form-ready signature file.',
+    ],
+    relatedTools: ['Image Compressor', 'Image Resizer', 'White Background', 'All-in-One Workspace'],
     faqs: [
       commonPrivacyFaq,
       {
@@ -154,11 +183,11 @@ export const SEO_PAGES: Record<string, SeoPage> = {
   },
   '/image-resizer': {
     path: '/image-resizer',
-    title: 'Free Image Resizer - Resize Photo in Pixels, CM or MM',
+    title: 'Image Resizer - Resize Photo in Pixels, CM or MM',
     description:
       'Resize images online for application forms. Set exact pixels, centimeters or millimeters and download form-ready photos locally.',
-    h1: 'Free image resizer for form photos',
-    keywords: ['image resizer', 'resize photo online', 'resize image in cm', 'resize image in mm', 'passport photo resizer'],
+    h1: 'Image Resizer',
+    keywords: ['image resizer', 'resize photo online', 'resize image in cm', 'resize image in mm', 'passport photo resizer', 'resize photo for form', 'resize image pixels'],
     summary:
       'Resize photos by dimensions for portals that require exact width, height, pixel, centimeter or millimeter limits.',
     useCases: [
@@ -166,6 +195,13 @@ export const SEO_PAGES: Record<string, SeoPage> = {
       'Set exact pixel dimensions for upload forms.',
       'Batch resize photos and download as a ZIP.',
     ],
+    howToSteps: [
+      'Upload the photo or image you want to resize.',
+      'Choose pixels, centimeters or millimeters.',
+      'Enter the required width and height for your form.',
+      'Download the resized image.',
+    ],
+    relatedTools: ['Image Compressor', 'Image Crop Tool', 'White Background', 'Signature Compressor'],
     faqs: [
       commonPrivacyFaq,
       {
@@ -180,14 +216,21 @@ export const SEO_PAGES: Record<string, SeoPage> = {
   },
   '/image-cropper': {
     path: '/image-cropper',
-    title: 'Free Image Crop Tool - Crop Photo for Forms',
+    title: 'Image Crop Tool - Crop Photo Online for Forms',
     description:
       'Crop photos online for passport, square and custom form sizes. Prepare images locally with a visual crop overlay.',
-    h1: 'Free image crop tool for passport and form photos',
-    keywords: ['image crop tool', 'crop passport photo', 'crop image online', 'photo cropper for forms'],
+    h1: 'Image Crop Tool',
+    keywords: ['image crop tool', 'crop passport photo', 'crop image online', 'photo cropper for forms', 'crop photo for exam form', 'passport photo cropper'],
     summary:
       'Crop scanned photos and profile images into upload-ready sizes for forms, applications and documents.',
     useCases: ['Crop passport photos.', 'Create square profile photos.', 'Crop custom dimensions for portals.'],
+    howToSteps: [
+      'Upload your photo.',
+      'Select passport, square or custom crop dimensions.',
+      'Adjust the crop area visually.',
+      'Download the cropped image.',
+    ],
+    relatedTools: ['Image Resizer', 'Image Compressor', 'White Background', 'Signature Compressor'],
     faqs: [
       commonPrivacyFaq,
       {
@@ -198,14 +241,21 @@ export const SEO_PAGES: Record<string, SeoPage> = {
   },
   '/white-background': {
     path: '/white-background',
-    title: 'Free White Background Tool - Remove Background from Photo',
+    title: 'White Background Photo Tool - Make Photo Background White',
     description:
       'Remove image background and replace it with solid white for forms, IDs and profile photos. Runs locally in your browser.',
-    h1: 'Free white background photo tool',
-    keywords: ['white background photo', 'remove background', 'photo white background', 'passport photo white background'],
+    h1: 'White Background Photo Tool',
+    keywords: ['white background photo', 'remove background', 'photo white background', 'passport photo white background', 'make background white', 'id photo white background'],
     summary:
       'Create form-friendly white background photos from images using local browser processing.',
     useCases: ['Make ID photos white background.', 'Prepare profile photos for forms.', 'Clean photo background before upload.'],
+    howToSteps: [
+      'Upload the photo that needs a white background.',
+      'Let FreeSeva remove or clean the existing background.',
+      'Preview the white background result.',
+      'Download the form-ready image.',
+    ],
+    relatedTools: ['Image Compressor', 'Image Resizer', 'Image Crop Tool', 'Signature Compressor'],
     faqs: [
       commonPrivacyFaq,
       {
@@ -216,14 +266,21 @@ export const SEO_PAGES: Record<string, SeoPage> = {
   },
   '/image-converter': {
     path: '/image-converter',
-    title: 'Free Image Converter - Convert JPG, PNG and WEBP',
+    title: 'Image Converter - Convert JPG, PNG and WEBP Online',
     description:
       'Convert images between JPG, PNG and WEBP formats online. Browser-local image conversion for form uploads and documents.',
-    h1: 'Free JPG, PNG and WEBP image converter',
-    keywords: ['image converter', 'jpg to png', 'png to jpg', 'webp to jpg', 'convert image online'],
+    h1: 'Image Converter',
+    keywords: ['image converter', 'jpg to png', 'png to jpg', 'webp to jpg', 'jpg to webp', 'convert image online'],
     summary:
       'Convert image formats quickly when a portal accepts only a specific file type.',
     useCases: ['Convert PNG to JPG.', 'Convert WEBP to JPG.', 'Convert images for upload forms.'],
+    howToSteps: [
+      'Upload the image you want to convert.',
+      'Select the required output format.',
+      'Convert the file in your browser.',
+      'Download the converted image.',
+    ],
+    relatedTools: ['Image Compressor', 'Image Resizer', 'Images to PDF', 'White Background'],
     faqs: [
       commonPrivacyFaq,
       {
@@ -234,11 +291,11 @@ export const SEO_PAGES: Record<string, SeoPage> = {
   },
   '/pdf-compressor': {
     path: '/pdf-compressor',
-    title: 'Free PDF Compressor Online - Compress PDF to 100KB, 200KB, 300KB',
+    title: 'Compress PDF Online - Free PDF Compressor',
     description:
       'Compress PDF files online for forms and applications. Reduce PDFs to 100KB, 200KB, 300KB or custom size locally without uploading.',
-    h1: 'Free PDF compressor for form uploads',
-    keywords: ['pdf compressor', 'compress pdf online', 'compress pdf to 100kb', 'compress pdf to 200kb', 'reduce pdf size'],
+    h1: 'Compress PDF Online',
+    keywords: ['pdf compressor', 'compress pdf online', 'compress pdf to 100kb', 'compress pdf to 200kb', 'compress pdf to 300kb', 'reduce pdf size', 'pdf size reducer', 'free pdf compressor'],
     summary:
       'Reduce PDF file size for portals with strict upload limits while keeping files private in the browser.',
     useCases: [
@@ -246,6 +303,13 @@ export const SEO_PAGES: Record<string, SeoPage> = {
       'Compress PDF under 200KB or 300KB.',
       'Batch compress multiple PDFs and download a ZIP.',
     ],
+    howToSteps: [
+      'Upload or drop your PDF file.',
+      'Choose a target size such as 100KB, 200KB, 300KB or a custom limit.',
+      'Compress the PDF locally in your browser.',
+      'Download the reduced-size PDF file.',
+    ],
+    relatedTools: ['Merge PDF', 'Split PDF', 'Images to PDF', 'All-in-One Workspace'],
     faqs: [
       commonPrivacyFaq,
       {
@@ -260,13 +324,20 @@ export const SEO_PAGES: Record<string, SeoPage> = {
   },
   '/pdf-merge': {
     path: '/pdf-merge',
-    title: 'Free PDF Merger - Merge PDF Files Online',
+    title: 'Merge PDF Online - Free PDF Merger',
     description:
       'Merge multiple PDF files into one document online. Combine certificates, forms and documents locally in your browser.',
-    h1: 'Free PDF merger',
-    keywords: ['merge pdf', 'pdf merger', 'combine pdf', 'join pdf files'],
+    h1: 'Merge PDF Online',
+    keywords: ['merge pdf', 'pdf merger', 'combine pdf', 'join pdf files', 'merge pdf online', 'combine pdf online'],
     summary: 'Combine multiple PDF documents into a single upload-ready file without sending files to a server.',
     useCases: ['Merge certificates.', 'Combine form documents.', 'Join multiple PDFs into one file.'],
+    howToSteps: [
+      'Upload the PDF files you want to merge.',
+      'Arrange them in the correct order.',
+      'Combine the PDFs into one document.',
+      'Download the merged PDF file.',
+    ],
+    relatedTools: ['PDF Compressor', 'Split PDF', 'Images to PDF', 'All-in-One Workspace'],
     faqs: [
       commonPrivacyFaq,
       {
@@ -277,13 +348,20 @@ export const SEO_PAGES: Record<string, SeoPage> = {
   },
   '/pdf-split': {
     path: '/pdf-split',
-    title: 'Free PDF Splitter - Split PDF Pages Online',
+    title: 'Split PDF Online - Free PDF Splitter',
     description:
       'Split PDF files online by pages or ranges. Extract selected PDF pages locally in your browser.',
-    h1: 'Free PDF splitter',
-    keywords: ['split pdf', 'pdf splitter', 'extract pdf pages', 'separate pdf pages'],
+    h1: 'Split PDF Online',
+    keywords: ['split pdf', 'pdf splitter', 'extract pdf pages', 'separate pdf pages', 'split pdf online', 'pdf page extractor'],
     summary: 'Extract pages from PDFs for portals that require only selected pages or individual documents.',
     useCases: ['Extract PDF pages.', 'Split PDF by range.', 'Separate documents from one PDF.'],
+    howToSteps: [
+      'Upload the PDF you want to split.',
+      'Choose pages or page ranges to extract.',
+      'Split the PDF in your browser.',
+      'Download the separated PDF output.',
+    ],
+    relatedTools: ['PDF Compressor', 'Merge PDF', 'Images to PDF', 'All-in-One Workspace'],
     faqs: [
       commonPrivacyFaq,
       {
@@ -294,14 +372,21 @@ export const SEO_PAGES: Record<string, SeoPage> = {
   },
   '/image-to-pdf': {
     path: '/image-to-pdf',
-    title: 'Free Image to PDF Converter - JPG, PNG to PDF',
+    title: 'Image to PDF Converter - Convert JPG, PNG to PDF',
     description:
       'Convert JPG, PNG and WEBP images to PDF online. Create a single PDF from photos, scanned sheets and documents locally.',
-    h1: 'Free image to PDF converter',
-    keywords: ['image to pdf', 'jpg to pdf', 'png to pdf', 'photo to pdf', 'convert images to pdf'],
+    h1: 'Image to PDF Converter',
+    keywords: ['image to pdf', 'jpg to pdf', 'png to pdf', 'photo to pdf', 'convert images to pdf', 'images to pdf', 'jpg png to pdf'],
     summary:
       'Create PDFs from photos or scanned images with page size, margin and orientation controls.',
     useCases: ['Convert JPG to PDF.', 'Convert multiple photos into one PDF.', 'Create PDF from scanned document photos.'],
+    howToSteps: [
+      'Upload one or more JPG, PNG or WEBP images.',
+      'Arrange image order and choose page settings.',
+      'Convert the images into one PDF.',
+      'Download the PDF document.',
+    ],
+    relatedTools: ['PDF Compressor', 'Merge PDF', 'Image Compressor', 'Image Converter'],
     faqs: [
       commonPrivacyFaq,
       {
@@ -315,8 +400,8 @@ export const SEO_PAGES: Record<string, SeoPage> = {
     title: 'All-in-One Form Helper - Prepare Photos, Signatures and PDFs',
     description:
       'Upload photos, signatures and PDFs once, set size targets and download a complete form-ready ZIP package. Free browser-local all-in-one workspace.',
-    h1: 'All-in-one form helper workspace',
-    keywords: ['form helper', 'document tools', 'photo signature pdf compressor', 'government form helper', 'job form documents'],
+    h1: 'All-in-One Form Helper',
+    keywords: ['form helper', 'document tools', 'photo signature pdf compressor', 'government form helper', 'job form documents', 'exam form document helper', 'photo signature pdf tools'],
     summary:
       'The all-in-one workspace prepares multiple file types in one batch for application forms, exam portals and job portals.',
     useCases: [
@@ -324,6 +409,13 @@ export const SEO_PAGES: Record<string, SeoPage> = {
       'Set custom KB limits for each file.',
       'Download a complete ZIP package for form submission.',
     ],
+    howToSteps: [
+      'Upload photos, signatures and PDFs together.',
+      'Set target sizes for each file type.',
+      'Process the full document batch in one workspace.',
+      'Download a ready-to-upload ZIP package.',
+    ],
+    relatedTools: ['PDF Compressor', 'Image Compressor', 'Signature Compressor', 'Images to PDF'],
     faqs: [
       commonPrivacyFaq,
       {
