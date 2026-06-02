@@ -1,6 +1,18 @@
 {
   "rewrites": [
     {
+      "source": "/copypasteguru",
+      "destination": "https://copypasteguru.vercel.app/copypasteguru"
+    },
+    {
+      "source": "/copypasteguru/",
+      "destination": "https://copypasteguru.vercel.app/copypasteguru/"
+    },
+    {
+      "source": "/copypasteguru/:path*",
+      "destination": "https://copypasteguru.vercel.app/copypasteguru/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

@@ -115,6 +115,50 @@ export const SEO_PAGES: Record<string, SeoPage> = {
       },
     ],
   },
+  '/tools': {
+    path: '/tools',
+    title: 'FreeSeva Tools - Free Public Projects and Digital Utilities',
+    description:
+      'Browse FreeSeva tools and public projects built for everyday use, including document utilities and productivity helpers available for free.',
+    h1: 'FreeSeva Tools',
+    keywords: [
+      'freeseva tools',
+      'free public projects',
+      'free digital utilities',
+      'free online tools',
+      'student tools',
+      'productivity tools',
+      'document tools',
+      'free tools by aryan gupta',
+    ],
+    summary:
+      'FreeSeva Tools is the catalog of free public projects available under the FreeSeva initiative, including internal browser-local tools and standalone projects routed under FreeSeva.',
+    useCases: [
+      'Find free tools built for students, professionals and everyday users.',
+      'Open Document Tools for PDFs, images, signatures and form-ready files.',
+      'Access standalone public projects added under the FreeSeva initiative.',
+    ],
+    howToSteps: [
+      'Open the FreeSeva tools page.',
+      'Search or filter the available public projects.',
+      'Choose the tool that matches your task.',
+      'Use the tool for free without unnecessary signups or paywalls.',
+    ],
+    relatedTools: ['Document Tools', 'CopyPasteGuru', 'All-in-One Workspace', 'Image Compressor'],
+    faqs: [
+      commonPrivacyFaq,
+      {
+        question: 'What is the FreeSeva tools page?',
+        answer:
+          'It is the catalog of useful public projects added under the FreeSeva initiative.',
+      },
+      {
+        question: 'Can tools live in separate repos?',
+        answer:
+          'Yes. Some FreeSeva tools can stay in their own repositories and deployments while being discoverable from FreeSeva.',
+      },
+    ],
+  },
   '/image-compressor': {
     path: '/image-compressor',
     title: 'Image Compressor - Compress JPG, PNG, WEBP Online',

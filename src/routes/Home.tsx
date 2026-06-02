@@ -17,14 +17,16 @@ import {
   Users,
   Zap,
 } from 'lucide-react';
+import { ProductCard } from '../components/products/ProductCard';
+import { freeSevaProducts } from '../products';
 
 const trustItems = [
-  { label: 'For Students', text: 'Prepare files for exam forms, admissions, certificates and scholarships.', icon: BookOpen },
-  { label: 'For Professionals', text: 'Handle PDFs, images and signatures for jobs, onboarding and documents.', icon: Briefcase },
-  { label: 'For Everyone', text: 'Simple public utility tools that do not require technical knowledge.', icon: Users },
-  { label: 'Privacy First', text: 'Tools are designed to keep files on your device whenever possible.', icon: ShieldCheck },
+  { label: 'For Students', text: 'Use free tools for exams, admissions, notes, applications and daily digital tasks.', icon: BookOpen },
+  { label: 'For Professionals', text: 'Handle practical workflows for documents, productivity and public web utilities.', icon: Briefcase },
+  { label: 'For Everyone', text: 'Simple public projects that do not require technical knowledge.', icon: Users },
+  { label: 'Privacy First', text: 'Projects are designed to avoid unnecessary accounts, uploads and storage.', icon: ShieldCheck },
   { label: 'Completely Free', text: 'No pricing pages, paywalls or hidden document limits.', icon: HeartHandshake },
-  { label: 'More Tools Ahead', text: 'FreeSeva will keep adding useful services around real everyday needs.', icon: Sparkles },
+  { label: 'More Tools Ahead', text: 'Useful public projects will be added here as they are built.', icon: Sparkles },
 ];
 
 const capabilities = [
@@ -38,8 +40,8 @@ const capabilities = [
 
 const futureAreas = [
   'More document utilities',
+  'Productivity helpers',
   'Student-friendly digital helpers',
-  'Professional productivity tools',
   'Simple public-service workflows',
 ];
 
@@ -55,10 +57,10 @@ export const Home: React.FC = () => {
 
           <nav className="hidden items-center gap-7 text-sm font-black text-navy-600 md:flex">
             <a href="#home" className="hover:text-brand-700">Home</a>
+            <Link to="/tools" className="hover:text-brand-700">Tools</Link>
             <a href="#mission" className="hover:text-brand-700">Mission</a>
             <a href="#future" className="hover:text-brand-700">Future</a>
             <a href="#privacy" className="hover:text-brand-700">Privacy</a>
-            <Link to="/document-tools" className="hover:text-brand-700">Document Tools</Link>
           </nav>
 
           <div className="flex items-center gap-2">
@@ -71,10 +73,10 @@ export const Home: React.FC = () => {
               Aryan Gupta
             </a>
             <Link
-              to="/document-tools"
+              to="/tools"
               className="hidden rounded-full bg-navy-950 px-5 py-2.5 text-xs font-black text-white shadow-lg shadow-navy-900/10 transition hover:-translate-y-0.5 md:inline-flex"
             >
-              Open Document Tools
+              Open Tools
             </Link>
           </div>
         </div>
@@ -98,12 +100,12 @@ export const Home: React.FC = () => {
                 </span>
               </h1>
               <p className="mx-auto mt-6 max-w-2xl text-lg font-black leading-relaxed text-navy-600 md:text-xl lg:mx-0">
-                An initiative to contribute to the community by helping students, professionals and everyday users
-                complete important digital tasks quickly, securely and without cost.
+                An initiative where useful public projects are built, collected and shared for students,
+                professionals and everyday users without cost.
               </p>
               <p className="mx-auto mt-4 max-w-2xl text-sm font-bold leading-relaxed text-navy-500 md:text-base lg:mx-0">
-                Document Tools is live today. More free product tools will be added over time for society,
-                education and work.
+                Document Tools is the first live product. More free projects will be added here whenever
+                they can solve real problems for people.
               </p>
 
               <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row lg:justify-start">
@@ -111,15 +113,15 @@ export const Home: React.FC = () => {
                   to="/document-tools"
                   className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 via-sky-500 to-emerald-500 px-7 py-4 text-sm font-black text-white shadow-xl shadow-blue-500/20 transition hover:-translate-y-0.5"
                 >
-                  Open Document Tools
+                  Start with Document Tools
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-                <a
-                  href="#mission"
+                <Link
+                  to="/tools"
                   className="inline-flex items-center justify-center gap-2 rounded-2xl border border-navy-200 bg-white px-7 py-4 text-sm font-black text-navy-850 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200"
                 >
-                  Read the Mission
-                </a>
+                  Browse All Tools
+                </Link>
               </div>
             </div>
 
@@ -198,6 +200,37 @@ export const Home: React.FC = () => {
           </div>
         </section>
 
+        <section id="tools" className="mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-14">
+          <div className="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-[0.18em] text-brand-700">FreeSeva tools</p>
+              <h2 className="mt-3 font-display text-3xl font-black tracking-tight text-navy-950 md:text-4xl">
+                Public projects available for everyone
+              </h2>
+              <p className="mt-4 max-w-2xl text-sm font-semibold leading-relaxed text-navy-600 md:text-base">
+                FreeSeva is the home for useful projects I build and decide to share publicly.
+                Each product can stay modular while being discoverable from one place.
+              </p>
+              <Link
+                to="/tools"
+                className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-navy-950 px-5 py-3 text-xs font-black text-white shadow-lg shadow-navy-900/10 transition hover:-translate-y-0.5"
+              >
+                View dedicated tools page
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+            <div className="rounded-2xl border border-navy-100 bg-white/80 px-4 py-3 text-xs font-black text-navy-700 shadow-sm backdrop-blur">
+              {freeSevaProducts.length} live tools
+            </div>
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-2">
+            {freeSevaProducts.map((product) => (
+              <ProductCard key={product.id} product={product} compact />
+            ))}
+          </div>
+        </section>
+
         <section id="document-tools" className="mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-14">
           <div className="relative overflow-hidden rounded-[2rem] border border-white/80 bg-white/76 p-6 shadow-[0_30px_90px_rgba(31,49,82,0.10)] backdrop-blur-xl md:p-8">
             <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-violet-200/40 blur-3xl" />
@@ -236,7 +269,7 @@ export const Home: React.FC = () => {
             <div>
               <p className="text-xs font-black uppercase tracking-[0.18em] text-violet-600">Mission</p>
               <h2 className="mt-3 font-display text-3xl font-black tracking-tight text-navy-950 md:text-4xl">
-                A small initiative to make useful digital help accessible.
+                A growing initiative to make useful digital help accessible.
               </h2>
             </div>
             <div className="space-y-4 rounded-[1.75rem] border border-white/80 bg-white/75 p-6 text-base font-bold leading-relaxed text-navy-600 shadow-[0_18px_55px_rgba(31,49,82,0.08)] backdrop-blur-xl">
@@ -245,8 +278,8 @@ export const Home: React.FC = () => {
                 faced by students, professionals, applicants and families.
               </p>
               <p>
-                The goal is simple: build free, reliable tools that save time, protect privacy and help people
-                complete important online tasks with confidence.
+                The goal is simple: keep building free, reliable projects and publish the ones that can help
+                people complete important online tasks with confidence.
               </p>
             </div>
           </div>
@@ -257,10 +290,10 @@ export const Home: React.FC = () => {
             <div>
               <p className="text-xs font-black uppercase tracking-[0.18em] text-brand-700">Growing with purpose</p>
               <h2 className="mt-3 font-display text-3xl font-black tracking-tight text-navy-950 md:text-4xl">
-                More free product tools will be added in the future.
+                More free projects will be added as they become useful.
               </h2>
               <p className="mt-5 text-base font-semibold leading-relaxed text-navy-600">
-                FreeSeva will expand carefully around tools that genuinely help people, especially where a free,
+                FreeSeva will expand carefully around projects that genuinely help people, especially where a free,
                 clean and privacy-conscious solution can save time.
               </p>
             </div>
@@ -284,8 +317,8 @@ export const Home: React.FC = () => {
               <h2 className="mt-3 font-display text-3xl font-black tracking-tight text-navy-950 md:text-4xl">Built for trust, not lock-in.</h2>
             </div>
             <div className="space-y-4 rounded-[1.75rem] border border-white/80 bg-white/75 p-6 text-base font-bold leading-relaxed text-navy-600 shadow-[0_18px_55px_rgba(31,49,82,0.08)] backdrop-blur-xl">
-              <p>Files stay on your device whenever possible, with no mandatory accounts and no unnecessary storage.</p>
-              <p>FreeSeva is designed for people who need quick utility tools without giving up control of personal documents.</p>
+            <p>Files stay on your device whenever possible, with no mandatory accounts and no unnecessary storage.</p>
+              <p>FreeSeva is designed for people who need quick public tools without giving up control of personal data.</p>
             </div>
           </div>
         </section>
@@ -297,7 +330,7 @@ export const Home: React.FC = () => {
             <p className="text-sm font-black text-emerald-300">Ready to get started?</p>
             <div className="mt-3 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
               <h2 className="max-w-2xl font-display text-3xl font-black tracking-tight md:text-4xl">
-                Open Document Tools and prepare your files now.
+                Explore the tools and use anything that helps.
               </h2>
               <Link
                 to="/document-tools"
@@ -316,9 +349,10 @@ export const Home: React.FC = () => {
         <div className="mx-auto flex max-w-7xl flex-col gap-5 text-sm font-semibold text-navy-500 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="font-black text-navy-950">freeSeva</p>
-            <p className="mt-1">A community initiative built with care by Aryan Gupta.</p>
+            <p className="mt-1">A growing public initiative built by Aryan Gupta.</p>
           </div>
           <div className="flex flex-wrap gap-4">
+            <Link to="/tools" className="hover:text-brand-700">Tools</Link>
             <a href="#mission" className="hover:text-brand-700">Mission</a>
             <a href="#future" className="hover:text-brand-700">Future</a>
             <a href="#privacy" className="hover:text-brand-700">Privacy</a>

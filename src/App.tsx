@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Home } from './routes/Home';
+import { Tools } from './routes/Tools';
 import { DocumentTools } from './routes/DocumentTools';
 import { Spinner } from './components/ui/Spinner';
 
@@ -73,6 +74,7 @@ function App() {
         <Routes>
           {/* Core Routes */}
           <Route path="/" element={<Home />} />
+          <Route path="/tools" element={<Tools />} />
           <Route path="/document-tools" element={<DocumentTools />} />
           
           {/* Tool Shell Routes */}
