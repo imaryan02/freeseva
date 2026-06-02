@@ -72,7 +72,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, compact = fal
   }
 
   return (
-    <a href={product.href} className={className}>
+    <a href={product.href} target="_blank" rel="noopener noreferrer" className={className}>
       {content}
     </a>
   );
