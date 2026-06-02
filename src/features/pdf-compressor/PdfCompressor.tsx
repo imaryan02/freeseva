@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef } from 'react';
 import JSZip from 'jszip';
 import { PageLayout } from '../../components/layout/PageLayout';
 import { Card } from '../../components/ui/Card';
@@ -7,10 +7,12 @@ import { DragDropUpload } from '../../components/ui/DragDropUpload';
 import { Spinner } from '../../components/ui/Spinner';
 import { PdfProcessingEngine } from '../../utils/engines/PdfProcessingEngine';
 import {
+  PDF_DEBUG_LOG_EVENT,
   createPdfDebugSession,
   describePdfError,
   getBrowserDiagnostics,
   getFileDiagnostics,
+  type PdfDebugLogEvent,
 } from '../../utils/debug/pdfDiagnostics';
 import { 
   Download, 
@@ -55,6 +57,8 @@ export const PdfCompressor: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [zipBlob, setZipBlob] = useState<Blob | null>(null);
   const [zipProgress, setZipProgress] = useState<string>('');
+  const [debugLogs, setDebugLogs] = useState<PdfDebugLogEvent[]>([]);
+  const [copyStatus, setCopyStatus] = useState<string>('');
   
   const [warningModal, setWarningModal] = useState<{
     itemName: string;
@@ -65,6 +69,47 @@ export const PdfCompressor: React.FC = () => {
   } | null>(null);
 
   const hiddenInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const handleDebugLog = (event: Event) => {
+      const detail = (event as CustomEvent<PdfDebugLogEvent>).detail;
+      if (!detail) return;
+      setDebugLogs((prev) => [...prev.slice(-199), detail]);
+    };
+
+    window.addEventListener(PDF_DEBUG_LOG_EVENT, handleDebugLog);
+    return () => window.removeEventListener(PDF_DEBUG_LOG_EVENT, handleDebugLog);
+  }, []);
+
+  const debugText = useMemo(
+    () =>
+      debugLogs
+        .map((entry) => {
+          const payload = JSON.stringify(entry.payload, (_key, value) => {
+            if (value instanceof Error) {
+              return {
+                name: value.name,
+                message: value.message,
+                stack: value.stack,
+              };
+            }
+            return value;
+          });
+          return `${entry.message}\n${payload}`;
+        })
+        .join('\n\n'),
+    [debugLogs]
+  );
+
+  const copyDebugLogs = async () => {
+    try {
+      await navigator.clipboard.writeText(debugText);
+      setCopyStatus('Copied. Paste it into chat.');
+    } catch (err) {
+      console.error('Failed to copy debug logs:', err);
+      setCopyStatus('Copy failed. Select the text below and copy manually.');
+    }
+  };
 
   const sanitizeFileName = (name: string): string => {
     return name.replace(/[\\/:*?"<>|]/g, '_');
@@ -474,6 +519,48 @@ export const PdfCompressor: React.FC = () => {
       description="Compress and package multiple PDF documents concurrently. Select presets, rename files, and download everything in one compiled ZIP."
     >
       <div className="flex flex-col gap-8 animate-fadeIn">
+        {debugLogs.length > 0 && (
+          <Card className="flex flex-col gap-3 border-amber-200 bg-amber-50/40">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-sm font-black text-navy-950">PDF Debug Logs</h2>
+                <p className="mt-1 text-[11px] font-semibold text-navy-500">
+                  After the error appears, tap Copy Logs and paste them into chat.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={copyDebugLogs}
+                  className="rounded-lg bg-navy-950 px-3 py-2 text-[11px] font-black text-white"
+                >
+                  Copy Logs
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDebugLogs([]);
+                    setCopyStatus('');
+                  }}
+                  className="rounded-lg border border-navy-200 bg-white px-3 py-2 text-[11px] font-black text-navy-700"
+                >
+                  Clear
+                </button>
+              </div>
+            </div>
+            {copyStatus && (
+              <p className="rounded-lg border border-amber-200 bg-white px-3 py-2 text-[11px] font-bold text-amber-700">
+                {copyStatus}
+              </p>
+            )}
+            <textarea
+              readOnly
+              value={debugText}
+              className="min-h-40 w-full resize-y rounded-lg border border-amber-200 bg-white p-3 font-mono text-[10px] leading-relaxed text-navy-700 outline-none"
+              aria-label="PDF debug logs"
+            />
+          </Card>
+        )}
         
         {/* Hidden File Input for Workspace expansion triggers */}
         <input

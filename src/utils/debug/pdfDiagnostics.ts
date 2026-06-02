@@ -25,6 +25,35 @@ export interface BrowserDiagnostics {
   memory?: Record<string, number>;
 }
 
+export interface PdfDebugLogEvent {
+  sessionId: string;
+  level: 'info' | 'warn' | 'error';
+  message: string;
+  payload: Record<string, unknown>;
+}
+
+export const PDF_DEBUG_LOG_EVENT = 'freeseva:pdf-debug-log';
+
+const emitDebugLog = (
+  sessionId: string,
+  level: PdfDebugLogEvent['level'],
+  message: string,
+  payload: Record<string, unknown>
+) => {
+  if (typeof window === 'undefined') return;
+
+  window.dispatchEvent(
+    new CustomEvent<PdfDebugLogEvent>(PDF_DEBUG_LOG_EVENT, {
+      detail: {
+        sessionId,
+        level,
+        message,
+        payload,
+      },
+    })
+  );
+};
+
 const getMemorySnapshot = (): Record<string, number> | undefined => {
   const perf = performance as Performance & {
     memory?: {
@@ -104,31 +133,47 @@ export const createPdfDebugSession = (label: string): PdfDebugSession => {
 
   const step = (stepLabel: string, details?: Record<string, unknown>) => {
     stepIndex += 1;
-    console.log(`[PDF Debug][${id}] [Step ${stepIndex}] ${stepLabel}`, basePayload(details));
+    const message = `[PDF Debug][${id}] [Step ${stepIndex}] ${stepLabel}`;
+    const payload = basePayload(details);
+    console.log(message, payload);
+    emitDebugLog(id, 'info', message, payload);
   };
 
   console.groupCollapsed(`[PDF Debug][${id}] ${label}`);
   console.log('[PDF Debug] Browser Diagnostics', browser);
+  emitDebugLog(id, 'info', `[PDF Debug][${id}] ${label}`, { browser });
 
   return {
     id,
     browser,
     step,
     info: (infoLabel, details) => {
-      console.log(`[PDF Debug][${id}] ${infoLabel}`, basePayload(details));
+      const message = `[PDF Debug][${id}] ${infoLabel}`;
+      const payload = basePayload(details);
+      console.log(message, payload);
+      emitDebugLog(id, 'info', message, payload);
     },
     warn: (warnLabel, details) => {
-      console.warn(`[PDF Debug][${id}] ${warnLabel}`, basePayload(details));
+      const message = `[PDF Debug][${id}] ${warnLabel}`;
+      const payload = basePayload(details);
+      console.warn(message, payload);
+      emitDebugLog(id, 'warn', message, payload);
     },
     error: (errorLabel, error, details) => {
-      console.error(`[PDF Debug][${id}] ${errorLabel}`, {
+      const message = `[PDF Debug][${id}] ${errorLabel}`;
+      const payload = {
         ...basePayload(details),
         reason: describePdfError(error),
         rawError: error,
-      });
+      };
+      console.error(message, payload);
+      emitDebugLog(id, 'error', message, payload);
     },
     end: (endLabel, details) => {
-      console.log(`[PDF Debug][${id}] ${endLabel}`, basePayload(details));
+      const message = `[PDF Debug][${id}] ${endLabel}`;
+      const payload = basePayload(details);
+      console.log(message, payload);
+      emitDebugLog(id, 'info', message, payload);
       console.groupEnd();
     },
   };
