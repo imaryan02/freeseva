@@ -65,12 +65,21 @@ export const Home: React.FC = () => {
 
           <div className="flex items-center gap-2">
             <a
-              href="https://www.linkedin.com/in/imaryan02/"
+              href="https://aryan-gupta-portfolio.vercel.app/"
               target="_blank"
               rel="noreferrer"
               className="hidden rounded-full border border-navy-100 bg-white px-4 py-2 text-xs font-black text-navy-700 shadow-sm transition hover:border-brand-200 hover:text-brand-700 sm:inline-flex"
             >
               Aryan Gupta
+            </a>
+            <a
+              href="https://www.linkedin.com/in/imaryan02/"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Aryan Gupta on LinkedIn"
+              className="hidden h-10 w-10 items-center justify-center rounded-full border border-[#0a66c2]/15 bg-[#0a66c2] text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#084f96] sm:inline-flex"
+            >
+              in
             </a>
             <Link
               to="/tools"
@@ -100,8 +109,8 @@ export const Home: React.FC = () => {
                 </span>
               </h1>
               <p className="mx-auto mt-6 max-w-2xl text-lg font-black leading-relaxed text-navy-600 md:text-xl lg:mx-0">
-                An initiative where useful public projects are built, collected and shared for students,
-                professionals and everyday users without cost.
+                An initiative to contribute to the community by helping students, professionals and everyday users
+                complete important digital tasks quickly, securely and without cost.
               </p>
               <p className="mx-auto mt-4 max-w-2xl text-sm font-bold leading-relaxed text-navy-500 md:text-base lg:mx-0">
                 Document Tools is the first live product. More free projects will be added here whenever
