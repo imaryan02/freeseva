@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
@@ -11,10 +11,12 @@ import {
   Image,
   Lock,
   Mail,
+  Menu,
   MousePointerClick,
   ShieldCheck,
   Sparkles,
   Users,
+  X,
   Zap,
 } from 'lucide-react';
 import { ProductCard } from '../components/products/ProductCard';
@@ -46,6 +48,10 @@ const futureAreas = [
 ];
 
 export const Home: React.FC = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_82%_0%,rgba(139,92,246,0.16),transparent_32%),radial-gradient(circle_at_0%_20%,rgba(16,185,129,0.12),transparent_28%),linear-gradient(180deg,#fbfdff_0%,#f5f8fc_48%,#ffffff_100%)] font-sans text-navy-950">
       <header className="sticky top-0 z-30 border-b border-white/70 bg-white/75 backdrop-blur-xl">
@@ -87,8 +93,95 @@ export const Home: React.FC = () => {
             >
               Open Tools
             </Link>
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(true)}
+              aria-label="Open navigation menu"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-navy-100 bg-white text-navy-800 shadow-sm transition hover:border-brand-200 hover:text-brand-700 md:hidden"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
           </div>
         </div>
+
+        {isMobileMenuOpen && (
+          <div className="fixed inset-0 z-50 md:hidden">
+            <button
+              type="button"
+              aria-label="Close navigation menu"
+              onClick={closeMobileMenu}
+              className="absolute inset-0 bg-navy-950/35 backdrop-blur-sm"
+            />
+            <div className="absolute right-4 top-4 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-[1.5rem] border border-white/80 bg-white shadow-2xl">
+              <div className="flex items-center justify-between border-b border-navy-100 px-5 py-4">
+                <Link
+                  to="/"
+                  onClick={closeMobileMenu}
+                  className="flex items-center gap-1 font-display text-2xl font-black tracking-tight text-brand-600"
+                >
+                  free<span className="text-navy-900">Seva</span>
+                  <span className="text-brand-600">+</span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={closeMobileMenu}
+                  aria-label="Close navigation menu"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-navy-50 text-navy-700 transition hover:bg-navy-100"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <nav className="grid gap-1 px-4 py-4 text-sm font-black text-navy-700">
+                <a onClick={closeMobileMenu} href="#home" className="rounded-2xl px-4 py-3 hover:bg-navy-50">
+                  Home
+                </a>
+                <Link onClick={closeMobileMenu} to="/tools" className="rounded-2xl px-4 py-3 hover:bg-navy-50">
+                  Tools
+                </Link>
+                <a onClick={closeMobileMenu} href="#mission" className="rounded-2xl px-4 py-3 hover:bg-navy-50">
+                  Mission
+                </a>
+                <a onClick={closeMobileMenu} href="#future" className="rounded-2xl px-4 py-3 hover:bg-navy-50">
+                  Future
+                </a>
+                <a onClick={closeMobileMenu} href="#privacy" className="rounded-2xl px-4 py-3 hover:bg-navy-50">
+                  Privacy
+                </a>
+              </nav>
+
+              <div className="grid gap-3 border-t border-navy-100 bg-navy-50/70 p-4">
+                <Link
+                  to="/tools"
+                  onClick={closeMobileMenu}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-navy-950 px-5 py-3 text-xs font-black text-white shadow-lg shadow-navy-900/10"
+                >
+                  Open Tools
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <div className="grid grid-cols-2 gap-2">
+                  <a
+                    href="https://aryan-gupta-portfolio.vercel.app/"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center rounded-2xl border border-navy-100 bg-white px-4 py-3 text-xs font-black text-navy-700 shadow-sm"
+                  >
+                    Aryan Gupta
+                  </a>
+                  <a
+                    href="https://www.linkedin.com/in/imaryan02/"
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="Aryan Gupta on LinkedIn"
+                    className="inline-flex items-center justify-center rounded-2xl bg-[#0a66c2] px-4 py-3 text-xs font-black text-white shadow-sm"
+                  >
+                    LinkedIn
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       <main id="home">
