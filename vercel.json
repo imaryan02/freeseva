@@ -1,4 +1,17 @@
 {
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "freeseva.org"
+        }
+      ],
+      "destination": "https://www.freeseva.org/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/copypasteguru",

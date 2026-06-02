@@ -246,11 +246,11 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   };
 
   const renderLogo = () => (
-    <Link to="/" className="flex items-center gap-1 group" onClick={() => setIsMobileMenuOpen(false)}>
-      <span className="text-2xl font-black tracking-tight text-brand-600 font-display">
+    <Link to="/" className="flex min-w-0 items-center gap-1 group" onClick={() => setIsMobileMenuOpen(false)}>
+      <span className="text-xl min-[380px]:text-2xl font-black tracking-tight text-brand-600 font-display leading-none">
         free<span className="text-navy-850">Seva</span>
       </span>
-      <Plus className="h-4 w-4 text-brand-600 stroke-[3.5]" />
+      <Plus className="h-3.5 w-3.5 min-[380px]:h-4 min-[380px]:w-4 text-brand-600 stroke-[3.5] flex-shrink-0" />
     </Link>
   );
 
@@ -356,11 +356,11 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
       )}
 
       <div className="flex-grow flex flex-col lg:pl-64 min-w-0">
-        <header className="sticky top-0 z-30 bg-white/65 backdrop-blur-xl border-b border-navy-100/60 py-3.5 px-4 sm:px-6 lg:px-8 select-none flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <header className="sticky top-0 z-30 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 bg-white/65 backdrop-blur-xl border-b border-navy-100/60 py-3.5 px-3 sm:px-6 lg:px-8 select-none lg:flex lg:justify-between">
+          <div className="flex min-w-0 items-center gap-1.5 sm:gap-3">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="lg:hidden p-2 rounded-xl text-navy-600 hover:text-navy-900 hover:bg-navy-100 transition-all active:scale-95"
+              className="lg:hidden p-2 rounded-xl text-navy-600 hover:text-navy-900 hover:bg-navy-100 transition-all active:scale-95 flex-shrink-0"
               aria-label="Open menu"
             >
               <Menu className="h-5 w-5" />
@@ -369,10 +369,10 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
             {location.pathname !== '/document-tools' && (
               <Link
                 to="/document-tools"
-                className="p-1.5 rounded-lg text-navy-500 hover:text-navy-900 hover:bg-navy-50 transition-colors border border-navy-150 flex items-center gap-1 text-[10px] font-bold"
+                className="p-1.5 rounded-lg text-navy-500 hover:text-navy-900 hover:bg-navy-50 transition-colors border border-navy-150 flex items-center gap-1 text-[10px] font-bold flex-shrink-0"
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
-                <span>Dashboard</span>
+                <span className="hidden min-[390px]:inline">Dashboard</span>
               </Link>
             )}
 
@@ -386,11 +386,11 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
             </div>
           </div>
 
-          <div className="absolute left-1/2 -translate-x-1/2 lg:hidden">
+          <div className="flex min-w-0 justify-center overflow-hidden lg:hidden">
             {renderLogo()}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
             <div className="hidden xl:flex items-center gap-2 rounded-full border border-navy-100 bg-white px-2 py-1 shadow-sm">
               <span className="pl-2 text-[10px] font-black text-navy-600">
                 Developed by <span className="text-navy-950">Aryan</span>
@@ -415,7 +415,7 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
 
             <button
               onClick={() => showToast('Login is not required. Files stay on your device and tools run in the browser.')}
-              className="h-10 w-10 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center hover:bg-emerald-100 transition-all active:scale-95"
+              className="h-10 w-10 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-700 flex items-center justify-center hover:bg-emerald-100 transition-all active:scale-95 flex-shrink-0"
               title="Privacy"
               aria-label="Privacy details"
             >
@@ -424,11 +424,11 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
           </div>
         </header>
 
-        <div className="flex items-center justify-center gap-2 border-b border-navy-100/60 bg-white/55 px-4 py-2 backdrop-blur-xl xl:hidden">
+        <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 border-b border-navy-100/60 bg-white/55 px-3 sm:px-4 py-2 backdrop-blur-xl xl:hidden">
           <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-navy-700 shadow-sm ring-1 ring-navy-100">
             Made in India 🇮🇳
           </span>
-          <span className="text-[10px] font-black text-navy-500">
+          <span className="hidden min-[360px]:inline text-[10px] font-black text-navy-500">
             Developed by <span className="text-navy-950">Aryan</span>
           </span>
           <a
