@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import JSZip from 'jszip';
 import { PageLayout } from '../../components/layout/PageLayout';
 import { Card } from '../../components/ui/Card';
@@ -6,14 +6,6 @@ import { Button } from '../../components/ui/Button';
 import { DragDropUpload } from '../../components/ui/DragDropUpload';
 import { Spinner } from '../../components/ui/Spinner';
 import { PdfProcessingEngine } from '../../utils/engines/PdfProcessingEngine';
-import {
-  PDF_DEBUG_LOG_EVENT,
-  createPdfDebugSession,
-  describePdfError,
-  getBrowserDiagnostics,
-  getFileDiagnostics,
-  type PdfDebugLogEvent,
-} from '../../utils/debug/pdfDiagnostics';
 import { 
   Download, 
   ShieldCheck, 
@@ -57,8 +49,6 @@ export const PdfCompressor: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [zipBlob, setZipBlob] = useState<Blob | null>(null);
   const [zipProgress, setZipProgress] = useState<string>('');
-  const [debugLogs, setDebugLogs] = useState<PdfDebugLogEvent[]>([]);
-  const [copyStatus, setCopyStatus] = useState<string>('');
   
   const [warningModal, setWarningModal] = useState<{
     itemName: string;
@@ -69,47 +59,6 @@ export const PdfCompressor: React.FC = () => {
   } | null>(null);
 
   const hiddenInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    const handleDebugLog = (event: Event) => {
-      const detail = (event as CustomEvent<PdfDebugLogEvent>).detail;
-      if (!detail) return;
-      setDebugLogs((prev) => [...prev.slice(-199), detail]);
-    };
-
-    window.addEventListener(PDF_DEBUG_LOG_EVENT, handleDebugLog);
-    return () => window.removeEventListener(PDF_DEBUG_LOG_EVENT, handleDebugLog);
-  }, []);
-
-  const debugText = useMemo(
-    () =>
-      debugLogs
-        .map((entry) => {
-          const payload = JSON.stringify(entry.payload, (_key, value) => {
-            if (value instanceof Error) {
-              return {
-                name: value.name,
-                message: value.message,
-                stack: value.stack,
-              };
-            }
-            return value;
-          });
-          return `${entry.message}\n${payload}`;
-        })
-        .join('\n\n'),
-    [debugLogs]
-  );
-
-  const copyDebugLogs = async () => {
-    try {
-      await navigator.clipboard.writeText(debugText);
-      setCopyStatus('Copied. Paste it into chat.');
-    } catch (err) {
-      console.error('Failed to copy debug logs:', err);
-      setCopyStatus('Copy failed. Select the text below and copy manually.');
-    }
-  };
 
   const sanitizeFileName = (name: string): string => {
     return name.replace(/[\\/:*?"<>|]/g, '_');
@@ -123,25 +72,13 @@ export const PdfCompressor: React.FC = () => {
   };
 
   const handleFileSelect = async (files: File[]) => {
-    const debug = createPdfDebugSession('PDF file selection');
-    debug.step('File Selected', {
-      fileCount: files.length,
-      files: files.map(getFileDiagnostics),
-    });
-
     const newItems: PdfBatchItem[] = [];
 
     for (const file of files) {
       let previewUrl = '';
       try {
-        debug.step('Preview Render Started', getFileDiagnostics(file));
         previewUrl = await PdfProcessingEngine.renderPageToUrl(file, 1, 0.2);
-        debug.step('Preview Render Success', {
-          fileName: file.name,
-          previewUrlLength: previewUrl.length,
-        });
       } catch (err) {
-        debug.error('Preview Render Failed', err, getFileDiagnostics(file));
         console.error('Failed to render PDF preview:', err);
       }
 
@@ -165,9 +102,6 @@ export const PdfCompressor: React.FC = () => {
     setQueue((prev) => [...prev, ...newItems]);
     setZipBlob(null);
     setZipProgress('');
-    debug.end('File Selection Finished', {
-      queuedItems: newItems.length,
-    });
   };
 
   const updateItemSettings = (id: string, updates: Partial<PdfBatchItem>) => {
@@ -206,23 +140,6 @@ export const PdfCompressor: React.FC = () => {
 
   const executeBatch = async () => {
     if (queue.length === 0) return;
-    const debug = createPdfDebugSession('PDF compression batch');
-    const browserDiagnostics = getBrowserDiagnostics();
-    debug.step('Compression Batch Started', {
-      queueLength: queue.length,
-      browserDiagnostics,
-      queue: queue.map((item) => ({
-        id: item.id,
-        customName: item.customName,
-        file: getFileDiagnostics(item.file),
-        sizeMode: item.sizeMode,
-        minSizeKB: item.minSizeKB,
-        maxSizeKB: item.maxSizeKB,
-        compressionStrategy: item.compressionStrategy,
-        compressionLevel: item.compressionLevel,
-      })),
-    });
-
     setIsProcessing(true);
     setZipBlob(null);
     setZipProgress('Starting PDF batch compilation...');
@@ -243,14 +160,6 @@ export const PdfCompressor: React.FC = () => {
       };
     });
     setQueue(validatedQueue);
-    debug.step('Input Parameters Validated', {
-      queue: validatedQueue.map((item) => ({
-        id: item.id,
-        customName: item.customName,
-        minSizeKB: item.minSizeKB,
-        maxSizeKB: item.maxSizeKB,
-      })),
-    });
 
     const newResults: Record<string, PdfBatchItemResult> = {};
     validatedQueue.forEach((item) => {
@@ -268,14 +177,6 @@ export const PdfCompressor: React.FC = () => {
     for (let i = 0; i < validatedQueue.length; i++) {
       const item = validatedQueue[i];
       setZipProgress(`Processing document ${i + 1} of ${queue.length}: ${item.customName}`);
-      const itemStartedAt = performance.now();
-      debug.step('Document Processing Started', {
-        index: i + 1,
-        total: validatedQueue.length,
-        id: item.id,
-        finalName: `${item.customName}.pdf`,
-        file: getFileDiagnostics(item.file),
-      });
 
       let currentItem = item;
       const originalKB = item.file.size / 1024;
@@ -293,11 +194,6 @@ export const PdfCompressor: React.FC = () => {
         if (isDrastic) {
           setZipProgress(`Awaiting quality decision for ${item.customName}...`);
           const choice = await new Promise<'proceed' | 'increase'>((res) => {
-            debug.step('High Compression Warning Shown', {
-              fileName: finalName,
-              originalKB: Math.round(originalKB),
-              targetKB: item.maxSizeKB,
-            });
             setWarningModal({
               itemName: finalName,
               targetKB: item.maxSizeKB,
@@ -308,11 +204,6 @@ export const PdfCompressor: React.FC = () => {
           });
 
           if (choice === 'increase') {
-            debug.step('User Increased Compression Limit', {
-              fileName: finalName,
-              previousMaxKB: item.maxSizeKB,
-              previousMinKB: item.minSizeKB,
-            });
             const increaseAmount = 45;
             const newMax = item.maxSizeKB + increaseAmount;
             const newMin = item.minSizeKB > 0 ? Math.max(10, item.minSizeKB + Math.round(increaseAmount * 0.4)) : 0;
@@ -334,44 +225,26 @@ export const PdfCompressor: React.FC = () => {
       try {
         let compressionResult;
         if (currentItem.compressionStrategy === 'preset') {
-          debug.step('Compression Execution Started', {
-            id: item.id,
-            strategy: 'preset',
-            level: currentItem.compressionLevel,
-          });
           compressionResult = await PdfProcessingEngine.compress(
             currentItem.file,
             currentItem.compressionLevel,
             undefined,
             true,
             currentItem.maxSizeKB,
-            currentItem.sizeMode === 'range' ? currentItem.minSizeKB : 0,
-            debug
+            currentItem.sizeMode === 'range' ? currentItem.minSizeKB : 0
           );
         } else {
-          debug.step('Compression Execution Started', {
-            id: item.id,
-            strategy: 'custom',
-            level: 'low',
-          });
           compressionResult = await PdfProcessingEngine.compress(
             currentItem.file,
             'low',
             undefined,
             true,
             currentItem.maxSizeKB,
-            currentItem.sizeMode === 'range' ? currentItem.minSizeKB : 0,
-            debug
+            currentItem.sizeMode === 'range' ? currentItem.minSizeKB : 0
           );
         }
 
         const finalFile = new File([compressionResult.file], finalName, { type: 'application/pdf' });
-        debug.step('Download File Generated', {
-          id: item.id,
-          finalName,
-          outputBytes: finalFile.size,
-          compressionElapsedMs: Math.round(performance.now() - itemStartedAt),
-        });
 
         const savingsPercentage = Math.max(
           0,
@@ -390,34 +263,21 @@ export const PdfCompressor: React.FC = () => {
 
         compiledFiles.push(finalFile);
       } catch (err: unknown) {
-        const friendlyError = describePdfError(err);
-        debug.error('Document Processing Failed', err, {
-          id: item.id,
-          file: getFileDiagnostics(item.file),
-          browserDiagnostics,
-          likelyRootCause: browserDiagnostics.isMobileSafari
-            ? 'Mobile Safari memory/canvas pressure is likely if the failure occurred during rasterization.'
-            : 'Check the failed step above for file read, worker, canvas, or pdf-lib failure.',
-        });
         console.error(`Error processing ${item.file.name}:`, err);
         setResults((prev) => ({
           ...prev,
           [item.id]: {
             ...prev[item.id],
             status: 'failed',
-            error: friendlyError,
+            error: err instanceof Error ? err.message : 'Compression failed',
           },
         }));
-        setZipProgress(`Error: ${friendlyError}`);
       }
     }
 
     if (compiledFiles.length > 0) {
       setZipProgress('Packing output PDFs inside ZIP package structures...');
       try {
-        debug.step('ZIP Generation Started', {
-          files: compiledFiles.map(getFileDiagnostics),
-        });
         const zip = new JSZip();
         const nameCounts: Record<string, number> = {};
 
@@ -439,13 +299,9 @@ export const PdfCompressor: React.FC = () => {
         }
 
         const compiledZip = await zip.generateAsync({ type: 'blob' });
-        debug.step('ZIP Generation Finished', {
-          zipBytes: compiledZip.size,
-        });
         setZipBlob(compiledZip);
         setZipProgress('ZIP archive compiled successfully!');
       } catch (zipErr) {
-        debug.error('ZIP Generation Failed', zipErr);
         console.error('Failed to compile ZIP:', zipErr);
         setZipProgress('Batch processed, but ZIP compilation failed.');
       }
@@ -453,17 +309,12 @@ export const PdfCompressor: React.FC = () => {
       setZipProgress('All queue elements failed processing constraints.');
     }
 
-    debug.end('Compression Batch Finished', {
-      outputFileCount: compiledFiles.length,
-    });
     setIsProcessing(false);
   };
 
   const triggerSingleDownload = (id: string) => {
     const res = results[id];
     if (!res || !res.processedFile) return;
-    const debug = createPdfDebugSession('PDF single download');
-    debug.step('Download Started', getFileDiagnostics(res.processedFile));
     const link = document.createElement('a');
     const objectUrl = URL.createObjectURL(res.processedFile);
     link.href = objectUrl;
@@ -472,17 +323,10 @@ export const PdfCompressor: React.FC = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(objectUrl);
-    debug.end('Download Generated', {
-      objectUrlRevoked: true,
-    });
   };
 
   const triggerZipDownload = () => {
     if (!zipBlob) return;
-    const debug = createPdfDebugSession('PDF ZIP download');
-    debug.step('ZIP Download Started', {
-      zipBytes: zipBlob.size,
-    });
     const link = document.createElement('a');
     const objectUrl = URL.createObjectURL(zipBlob);
     link.href = objectUrl;
@@ -491,9 +335,6 @@ export const PdfCompressor: React.FC = () => {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(objectUrl);
-    debug.end('ZIP Download Generated', {
-      objectUrlRevoked: true,
-    });
   };
 
   const resetWorkspace = () => {
@@ -519,49 +360,6 @@ export const PdfCompressor: React.FC = () => {
       description="Compress and package multiple PDF documents concurrently. Select presets, rename files, and download everything in one compiled ZIP."
     >
       <div className="flex flex-col gap-8 animate-fadeIn">
-        {debugLogs.length > 0 && (
-          <Card className="flex flex-col gap-3 border-amber-200 bg-amber-50/40">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h2 className="text-sm font-black text-navy-950">PDF Debug Logs</h2>
-                <p className="mt-1 text-[11px] font-semibold text-navy-500">
-                  After the error appears, tap Copy Logs and paste them into chat.
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={copyDebugLogs}
-                  className="rounded-lg bg-navy-950 px-3 py-2 text-[11px] font-black text-white"
-                >
-                  Copy Logs
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDebugLogs([]);
-                    setCopyStatus('');
-                  }}
-                  className="rounded-lg border border-navy-200 bg-white px-3 py-2 text-[11px] font-black text-navy-700"
-                >
-                  Clear
-                </button>
-              </div>
-            </div>
-            {copyStatus && (
-              <p className="rounded-lg border border-amber-200 bg-white px-3 py-2 text-[11px] font-bold text-amber-700">
-                {copyStatus}
-              </p>
-            )}
-            <textarea
-              readOnly
-              value={debugText}
-              className="min-h-40 w-full resize-y rounded-lg border border-amber-200 bg-white p-3 font-mono text-[10px] leading-relaxed text-navy-700 outline-none"
-              aria-label="PDF debug logs"
-            />
-          </Card>
-        )}
-        
         {/* Hidden File Input for Workspace expansion triggers */}
         <input
           type="file"

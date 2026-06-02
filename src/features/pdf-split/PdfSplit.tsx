@@ -20,6 +20,7 @@ export const PdfSplit: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [pagesCount, setPagesCount] = useState<number>(0);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
+  const [thumbnailErrors, setThumbnailErrors] = useState<Record<number, string>>({});
   const [selectedPages, setSelectedPages] = useState<number[]>([]);
   const [rangeInput, setRangeInput] = useState<string>('');
 
@@ -34,22 +35,38 @@ export const PdfSplit: React.FC = () => {
       const file = files[0];
       setSelectedFile(file);
       setResultEmpty();
+      setPagesCount(0);
+      setThumbnails([]);
+      setThumbnailErrors({});
+      setSelectedPages([]);
+      setRangeInput('');
       setIsLoadingThumbs(true);
 
       try {
         const metadata = await PdfProcessingEngine.getPdfMetadata(file);
         setPagesCount(metadata.pagesCount);
-        
-        // Render small visual thumbnails for all pages
-        const urls: string[] = [];
-        for (let i = 1; i <= metadata.pagesCount; i++) {
-          const url = await PdfProcessingEngine.renderPageToUrl(file, i, 0.22); // low scale for swift render times
-          urls.push(url);
+
+        if (metadata.pagesCount > 0) {
+          setThumbnails(Array.from({ length: metadata.pagesCount }, () => ''));
+          setSelectedPages([1]);
+          setRangeInput('1');
         }
-        setThumbnails(urls);
-        // Pre-select first page
-        setSelectedPages([1]);
-        setRangeInput('1');
+
+        // Render thumbnails independently so Safari failures do not hide page selectors.
+        for (let i = 1; i <= metadata.pagesCount; i++) {
+          try {
+            const url = await PdfProcessingEngine.renderPageToUrl(file, i, 0.22);
+            setThumbnails((prev) => {
+              const next = [...prev];
+              next[i - 1] = url;
+              return next;
+            });
+          } catch (pageErr) {
+            const message = pageErr instanceof Error ? pageErr.message : 'Preview render failed';
+            setThumbnailErrors((prev) => ({ ...prev, [i]: message }));
+            console.error(`Error rendering PDF split thumbnail for page ${i}:`, pageErr);
+          }
+        }
       } catch (err) {
         console.error('Error generating PDF thumbnails:', err);
       } finally {
@@ -176,6 +193,7 @@ export const PdfSplit: React.FC = () => {
     setSelectedFile(null);
     setPagesCount(0);
     setThumbnails([]);
+    setThumbnailErrors({});
     setSelectedPages([]);
     setRangeInput('');
     setResultEmpty();
@@ -216,12 +234,25 @@ export const PdfSplit: React.FC = () => {
                 </Button>
               </div>
 
-              {isLoadingThumbs ? (
+              {pagesCount === 0 && isLoadingThumbs ? (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <Spinner size="lg" label="Generating page visuals..." />
+                  <Spinner size="lg" label="Reading PDF pages..." />
                 </div>
               ) : (
                 <div className="flex flex-col gap-4 animate-fadeIn">
+                  {isLoadingThumbs && (
+                    <div className="flex items-center gap-2 rounded-xl border border-brand-100 bg-brand-50/60 px-3 py-2 text-xs font-bold text-brand-800">
+                      <Spinner size="sm" />
+                      <span>Generating page visuals. You can select pages while previews load.</span>
+                    </div>
+                  )}
+
+                  {Object.keys(thumbnailErrors).length > 0 && (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-800">
+                      Some page previews could not render on this browser, but page selection still works.
+                    </div>
+                  )}
+
                   {/* Selectors and custom text range input */}
                   <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-navy-50 border border-navy-150 p-4 rounded-xl">
                     <div className="flex gap-2 w-full sm:w-auto">
@@ -249,9 +280,11 @@ export const PdfSplit: React.FC = () => {
 
                   {/* Thumbnail Selector Grid */}
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-[380px] overflow-y-auto p-1">
-                    {thumbnails.map((url, idx) => {
+                    {Array.from({ length: pagesCount }, (_, idx) => {
                       const pageNum = idx + 1;
+                      const url = thumbnails[idx];
                       const isChecked = selectedPages.includes(pageNum);
+                      const thumbnailError = thumbnailErrors[pageNum];
                       return (
                         <div
                           key={pageNum}
@@ -264,11 +297,24 @@ export const PdfSplit: React.FC = () => {
                         >
                           {/* Rendering Canvas Slice */}
                           <div className="aspect-[3/4] w-full bg-navy-50/50 flex items-center justify-center p-2 border-b border-navy-100">
-                            <img
-                              src={url}
-                              alt={`Page ${pageNum}`}
-                              className="object-contain w-full h-full"
-                            />
+                            {url ? (
+                              <img
+                                src={url}
+                                alt={`Page ${pageNum}`}
+                                className="object-contain w-full h-full"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-navy-200 bg-white text-center">
+                                {thumbnailError ? (
+                                  <FileText className="h-7 w-7 text-amber-500" />
+                                ) : (
+                                  <Spinner size="sm" />
+                                )}
+                                <span className="text-[10px] font-black text-navy-500">
+                                  Page {pageNum}
+                                </span>
+                              </div>
+                            )}
                           </div>
 
                           <div className="flex items-center gap-2 p-2 w-full justify-center bg-navy-50/30">
