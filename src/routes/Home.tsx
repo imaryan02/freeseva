@@ -282,20 +282,20 @@ export const Home: React.FC = () => {
               Built around real everyday needs
             </h2>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
             {trustItems.map((item) => {
               const Icon = item.icon;
               return (
                 <article
                   key={item.label}
-                  className="group relative overflow-hidden rounded-[1.75rem] border border-white/80 bg-white/75 p-6 shadow-[0_18px_55px_rgba(31,49,82,0.08)] backdrop-blur-xl transition hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(31,49,82,0.12)]"
+                  className="group relative overflow-hidden rounded-[1.25rem] border border-white/80 bg-white/75 p-4 shadow-[0_18px_55px_rgba(31,49,82,0.08)] backdrop-blur-xl transition hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(31,49,82,0.12)] sm:rounded-[1.75rem] sm:p-6"
                 >
                   <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-[radial-gradient(circle,rgba(139,92,246,0.16),transparent_68%)] transition group-hover:scale-125" />
-                  <div className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-50 to-violet-50 text-brand-600 shadow-sm ring-1 ring-white">
-                    <Icon className="h-6 w-6" />
+                  <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-50 to-violet-50 text-brand-600 shadow-sm ring-1 ring-white sm:h-12 sm:w-12">
+                    <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
                   </div>
-                  <h3 className="relative mt-5 text-lg font-black text-navy-950">{item.label}</h3>
-                  <p className="relative mt-2 text-sm font-bold leading-relaxed text-navy-550">{item.text}</p>
+                  <h3 className="relative mt-4 text-sm font-black leading-tight text-navy-950 sm:mt-5 sm:text-lg">{item.label}</h3>
+                  <p className="relative mt-2 text-[11px] font-bold leading-relaxed text-navy-550 sm:text-sm">{item.text}</p>
                 </article>
               );
             })}
@@ -354,11 +354,11 @@ export const Home: React.FC = () => {
               </Link>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               {capabilities.map((capability) => (
-                <div key={capability} className="flex items-center gap-3 rounded-2xl border border-navy-100 bg-white/80 px-4 py-4 shadow-sm backdrop-blur">
-                  <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-brand-600" />
-                  <span className="text-sm font-black text-navy-800">{capability}</span>
+                <div key={capability} className="flex min-h-20 items-start gap-2 rounded-2xl border border-navy-100 bg-white/80 px-3 py-3 shadow-sm backdrop-blur sm:min-h-0 sm:items-center sm:gap-3 sm:px-4 sm:py-4">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-brand-600 sm:mt-0 sm:h-5 sm:w-5" />
+                  <span className="text-[11px] font-black leading-snug text-navy-800 sm:text-sm">{capability}</span>
                 </div>
               ))}
             </div>
@@ -399,13 +399,13 @@ export const Home: React.FC = () => {
                 clean and privacy-conscious solution can save time.
               </p>
             </div>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
               {futureAreas.map((area) => (
-                <div key={area} className="rounded-[1.5rem] border border-white/80 bg-white/75 p-5 shadow-[0_16px_45px_rgba(31,49,82,0.07)] backdrop-blur-xl">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-50 text-violet-600">
-                    <Sparkles className="h-5 w-5" />
+                <div key={area} className="rounded-[1.25rem] border border-white/80 bg-white/75 p-4 shadow-[0_16px_45px_rgba(31,49,82,0.07)] backdrop-blur-xl sm:rounded-[1.5rem] sm:p-5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-violet-50 text-violet-600 sm:h-10 sm:w-10">
+                    <Sparkles className="h-4.5 w-4.5 sm:h-5 sm:w-5" />
                   </div>
-                  <p className="mt-4 text-sm font-black text-navy-850">{area}</p>
+                  <p className="mt-3 text-[11px] font-black leading-snug text-navy-850 sm:mt-4 sm:text-sm">{area}</p>
                 </div>
               ))}
             </div>
