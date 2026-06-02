@@ -1,5 +1,6 @@
 import { PDFDocument } from 'pdf-lib';
 import * as pdfjsLib from 'pdfjs-dist';
+import type { PdfDebugSession } from '../debug/pdfDiagnostics';
 // Import worker with Vite's worker compiler query suffix
 import PdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?worker';
 
@@ -87,17 +88,48 @@ export class PdfProcessingEngine {
     onProgress?: (progress: number) => void,
     useMonochrome: boolean = false,
     targetSizeKB: number = 0,
-    preferredMinSizeKB: number = 0
+    preferredMinSizeKB: number = 0,
+    debug?: PdfDebugSession
   ): Promise<PdfProcessingResult> {
-    const arrayBuffer = await file.arrayBuffer();
-    const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const compressionStartedAt = performance.now();
+    debug?.step('Compression Started', {
+      level,
+      useMonochrome,
+      targetSizeKB,
+      preferredMinSizeKB,
+      fileName: file.name,
+      fileSizeBytes: file.size,
+    });
+
+    let arrayBuffer: ArrayBuffer;
+    try {
+      arrayBuffer = await file.arrayBuffer();
+      debug?.step('File Read Success', {
+        arrayBufferBytes: arrayBuffer.byteLength,
+      });
+    } catch (err) {
+      debug?.error('File Read Failed', err);
+      throw err;
+    }
+
+    let pdfDoc: pdfjsLib.PDFDocumentProxy;
+    try {
+      pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      debug?.step('PDF.js Document Loaded', {
+        pagesCount: pdfDoc.numPages,
+      });
+    } catch (err) {
+      debug?.error('PDF.js Document Load Failed', err);
+      throw err;
+    }
+
     const pagesCount = pdfDoc.numPages;
 
     // --- Force-compress path: structural optimization first, rasterization fallback ---
     // Phase 1 tries Adobe-style lossless optimization (keeps text as vector).
     // Phase 2 falls back to rasterization only if structural optimization isn't enough.
     if (useMonochrome && targetSizeKB > 0) {
-      return this.compressMonochromeIterative(file, pdfDoc, pagesCount, targetSizeKB, preferredMinSizeKB, onProgress);
+      return this.compressMonochromeIterative(file, pdfDoc, pagesCount, targetSizeKB, preferredMinSizeKB, onProgress, debug);
     }
  
     // --- Standard rasterization path ---
@@ -117,6 +149,12 @@ export class PdfProcessingEngine {
         onProgress(Math.round(((i - 1) / pagesCount) * 90));
       }
  
+      debug?.info('Page Render Started', {
+        pageNumber: i,
+        pagesCount,
+        scale: config.scale,
+      });
+
       const page = await pdfDoc.getPage(i);
       const viewport = page.getViewport({ scale: config.scale });
       
@@ -130,14 +168,31 @@ export class PdfProcessingEngine {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
  
-      await page.render({
-        canvasContext: ctx,
-        viewport,
-        canvas: canvas,
-      }).promise;
+      try {
+        await page.render({
+          canvasContext: ctx,
+          viewport,
+          canvas: canvas,
+        }).promise;
+      } catch (err) {
+        debug?.error('Page Render Failed', err, {
+          pageNumber: i,
+          canvasWidth: canvas.width,
+          canvasHeight: canvas.height,
+          canvasPixels: canvas.width * canvas.height,
+        });
+        throw err;
+      }
 
       const imgDataUrl = canvas.toDataURL('image/jpeg', config.quality);
       const imgBytes = await fetch(imgDataUrl).then((r) => r.arrayBuffer());
+      debug?.info('Page Encoded As JPEG', {
+        pageNumber: i,
+        canvasWidth: canvas.width,
+        canvasHeight: canvas.height,
+        canvasPixels: canvas.width * canvas.height,
+        jpegBytes: imgBytes.byteLength,
+      });
  
       const embedImg = await resultPdf.embedJpg(imgBytes);
       const { width, height } = embedImg.scale(1.0);
@@ -154,6 +209,10 @@ export class PdfProcessingEngine {
     if (onProgress) onProgress(95);
 
     const resultPdfBytes = await resultPdf.save();
+    debug?.step('Compressed PDF Saved', {
+      outputBytes: resultPdfBytes.byteLength,
+      elapsedMs: Math.round(performance.now() - compressionStartedAt),
+    });
     
     const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
     const compressedFile = this.bytesToFile(resultPdfBytes, `${baseName}_compressed.pdf`, 'application/pdf');
@@ -178,6 +237,11 @@ export class PdfProcessingEngine {
     );
 
     const previewUrl = URL.createObjectURL(compressedFile);
+    debug?.end('Compression Finished', {
+      originalSizeBytes: file.size,
+      compressedSizeBytes: compressedFile.size,
+      savingsPercentage,
+    });
 
     return {
       file: compressedFile,
@@ -209,6 +273,7 @@ export class PdfProcessingEngine {
     targetSizeKB: number,
     preferredMinSizeKB: number = 0,
     onProgress?: (progress: number) => void,
+    debug?: PdfDebugSession,
   ): Promise<PdfProcessingResult> {
     const baseName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
     const targetBytes = targetSizeKB * 1024;
@@ -252,6 +317,11 @@ export class PdfProcessingEngine {
     let structurallyOptimizedFile: File | null = null;
 
     try {
+      debug?.step('Structural Optimization Started', {
+        targetBytes,
+        preferredMinBytes,
+        pagesCount,
+      });
       const arrayBuffer = await file.arrayBuffer();
       const srcDoc = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
 
@@ -274,6 +344,10 @@ export class PdfProcessingEngine {
       // Save the structurally optimized PDF
       const cleanBytes = await cleanDoc.save();
       const cleanFile = this.bytesToFile(cleanBytes, `${baseName}_compressed.pdf`, 'application/pdf');
+      debug?.step('Structural Optimization Saved', {
+        outputBytes: cleanFile.size,
+        targetBytes,
+      });
 
       if (onProgress) onProgress(40);
 
@@ -287,10 +361,16 @@ export class PdfProcessingEngine {
         structurallyOptimizedFile = cleanFile;
       }
     } catch (err) {
+      debug?.error('Structural Optimization Failed', err);
       console.warn('Structural optimization failed, falling back to rasterization:', err);
     }
 
     if (onProgress) onProgress(45);
+    debug?.step('Rasterization Fallback Started', {
+      scaleTiers: [1.75, 1.5, 1.35, 1.2, 1.0, 0.85, 0.75, 0.65, 0.5],
+      qualitySteps: [0.95, 0.9, 0.86, 0.82, 0.78, 0.74, 0.7, 0.66, 0.62, 0.58, 0.54, 0.5, 0.46, 0.42, 0.38, 0.34, 0.3, 0.25, 0.2, 0.15, 0.1],
+      warning: 'This path renders each page repeatedly and is the highest-risk path on iPhone Safari memory limits.',
+    });
 
     // ═══════════════════════════════════════════════════════════
     // PHASE 2: Rasterization Fallback (only if Phase 1 wasn't enough)
@@ -305,6 +385,11 @@ export class PdfProcessingEngine {
     for (let si = 0; si < scaleTiers.length; si++) {
       const renderScale = scaleTiers[si];
       const pageCanvases: HTMLCanvasElement[] = [];
+      debug?.info('Raster Scale Tier Started', {
+        scaleIndex: si + 1,
+        renderScale,
+        pagesCount,
+      });
 
       for (let i = 1; i <= pagesCount; i++) {
         if (onProgress) {
@@ -326,14 +411,32 @@ export class PdfProcessingEngine {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        await page.render({
-          canvasContext: ctx,
-          viewport,
-          canvas: canvas,
-        }).promise;
+        try {
+          await page.render({
+            canvasContext: ctx,
+            viewport,
+            canvas: canvas,
+          }).promise;
+        } catch (err) {
+          debug?.error('Raster Page Render Failed', err, {
+            scaleIndex: si + 1,
+            renderScale,
+            pageNumber: i,
+            canvasWidth: canvas.width,
+            canvasHeight: canvas.height,
+            canvasPixels: canvas.width * canvas.height,
+          });
+          throw err;
+        }
 
         pageCanvases.push(canvas);
       }
+      debug?.info('Raster Scale Tier Rendered', {
+        scaleIndex: si + 1,
+        renderScale,
+        canvasesHeldInMemory: pageCanvases.length,
+        totalCanvasPixels: pageCanvases.reduce((sum, canvas) => sum + canvas.width * canvas.height, 0),
+      });
 
       // Try quality steps at this scale
       for (let qi = 0; qi < qualitySteps.length; qi++) {
@@ -365,6 +468,13 @@ export class PdfProcessingEngine {
 
         const pdfBytes = await iterPdf.save();
         bestPdfBytes = pdfBytes as Uint8Array;
+        debug?.info('Raster Candidate Saved', {
+          scaleIndex: si + 1,
+          renderScale,
+          quality,
+          outputBytes: pdfBytes.byteLength,
+          underTarget: pdfBytes.byteLength <= targetBytes,
+        });
 
         if (pdfBytes.byteLength <= targetBytes) {
           const candidate: PdfCandidate = {
@@ -409,6 +519,12 @@ export class PdfProcessingEngine {
     const compressedFile = this.bytesToFile(finalBytes, `${baseName}_compressed.pdf`, 'application/pdf');
 
     if (onProgress) onProgress(100);
+    debug?.end('Compression Finished', {
+      originalSizeBytes: file.size,
+      compressedSizeBytes: compressedFile.size,
+      usedUnderTargetCandidate: Boolean(finalCandidate),
+      targetBytes,
+    });
     return buildResult(compressedFile);
   }
 
