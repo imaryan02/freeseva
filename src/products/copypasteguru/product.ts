@@ -5,7 +5,7 @@ export const copyPasteGuruProduct: FreeSevaProduct = {
   name: 'CopyPasteGuru',
   tagline: 'A focused tool for faster copy-paste workflows.',
   description:
-    'A standalone public utility project added under the FreeSeva initiative while staying in its own repo.',
+    'CopyPasteGuru is a free real-time text sharing tool. Create a room, paste text, and open the same room on another device to instantly sync notes, links, or code snippets without logging in.',
   category: 'Productivity',
   href: '/copypasteguru/',
   access: 'proxied',
