@@ -100,6 +100,9 @@ export const getBrowserDiagnostics = (): BrowserDiagnostics => {
 export const describePdfError = (error: unknown): string => {
   if (error instanceof Error) {
     const message = error.message || error.name;
+    if (/getOrInsertComputed|getOrInsert/i.test(message)) {
+      return `Safari compatibility issue: pdf.js called a newer Map method missing in this browser. Load the Map polyfill before pdf.js. Original error: ${message}`;
+    }
     if (/memory|allocation|out of memory|maximum call stack/i.test(message)) {
       return `Memory pressure while processing PDF: ${message}`;
     }

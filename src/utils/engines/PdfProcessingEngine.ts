@@ -1,4 +1,5 @@
 import { PDFDocument } from 'pdf-lib';
+import '../polyfills/pdfjsMapPolyfills';
 import * as pdfjsLib from 'pdfjs-dist';
 import type { PdfDebugSession } from '../debug/pdfDiagnostics';
 // Import worker with Vite's worker compiler query suffix

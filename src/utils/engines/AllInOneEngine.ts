@@ -3,6 +3,7 @@ import { ImageCompressionEngine } from './ImageCompressionEngine';
 import { SignatureCompressionEngine } from './SignatureCompressionEngine';
 import { PdfProcessingEngine } from './PdfProcessingEngine';
 import { ImageResizeEngine } from './ImageResizeEngine';
+import type { PdfDebugSession } from '../debug/pdfDiagnostics';
 
 export interface BatchItem {
   id: string;
@@ -50,7 +51,8 @@ export class AllInOneEngine {
    */
   static async processItem(
     item: BatchItem,
-    onProgress?: (progress: number) => void
+    onProgress?: (progress: number) => void,
+    debug?: PdfDebugSession
   ): Promise<File> {
     const { 
       file, 
@@ -144,9 +146,17 @@ export class AllInOneEngine {
 
       } else if (targetType === 'document') {
         // Always use the smart pipeline: structural optimization first, rasterization fallback
+        debug?.step('All-in-One PDF Compression Started', {
+          itemId: item.id,
+          fileName: file.name,
+          fileSizeBytes: file.size,
+          minSizeKB,
+          maxSizeKB,
+          sizeMode: item.sizeMode,
+        });
         const result = await PdfProcessingEngine.compress(file, 'low', (p) => {
           if (onProgress) onProgress(10 + Math.round(p * 0.7));
-        }, true, maxSizeKB, item.sizeMode === 'range' ? minSizeKB : 0);
+        }, true, maxSizeKB, item.sizeMode === 'range' ? minSizeKB : 0, debug);
 
         const processedBlob = result.file;
         finalFile = new File([processedBlob], finalName, { type: 'application/pdf' });
