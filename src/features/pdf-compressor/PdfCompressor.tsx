@@ -645,10 +645,11 @@ export const PdfCompressor: React.FC = () => {
                               <button
                                 type="button"
                                 onClick={() => triggerSingleDownload(item.id)}
-                                className="p-1.5 text-brand-600 hover:bg-brand-50 border border-brand-100 rounded transition-all cursor-pointer active:scale-95"
-                                title="Download PDF"
+                                className="px-3 py-1.5 text-xs text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition-all cursor-pointer active:scale-95 font-bold flex items-center justify-center gap-1.5 w-full lg:w-auto mt-2 lg:mt-0"
+                                title="Download compressed PDF"
                               >
                                 <Download className="h-3.5 w-3.5" />
+                                <span>Download</span>
                               </button>
                             )}
 
@@ -733,15 +734,38 @@ export const PdfCompressor: React.FC = () => {
                       <span className="font-bold text-brand-700">{formatBytes(zipBlob.size)}</span>
                     </div>
 
-                    <Button
-                      variant="primary"
-                      size="lg"
-                      className="w-full flex items-center justify-center gap-2 text-sm font-bold"
-                      onClick={triggerZipDownload}
-                    >
-                      <Download className="h-4 w-4" />
-                      Download ZIP Package
-                    </Button>
+                    {queue.length === 1 ? (
+                      <div className="flex flex-col gap-2.5">
+                        <Button
+                          variant="primary"
+                          size="lg"
+                          className="w-full flex items-center justify-center gap-2 text-sm font-bold shadow-md"
+                          onClick={() => triggerSingleDownload(queue[0].id)}
+                        >
+                          <Download className="h-4 w-4" />
+                          Download File
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="md"
+                          className="w-full flex items-center justify-center gap-2 text-sm font-bold bg-white"
+                          onClick={triggerZipDownload}
+                        >
+                          <Download className="h-4 w-4" />
+                          Download as ZIP Archive
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        size="lg"
+                        className="w-full flex items-center justify-center gap-2 text-sm font-bold"
+                        onClick={triggerZipDownload}
+                      >
+                        <Download className="h-4 w-4" />
+                        Download ZIP Package
+                      </Button>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-10 text-navy-500 border-2 border-dashed border-navy-200 rounded-xl flex flex-col items-center justify-center select-none">
