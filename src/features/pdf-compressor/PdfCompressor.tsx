@@ -510,10 +510,10 @@ export const PdfCompressor: React.FC = () => {
                             </div>
                           </div>
 
-                          {/* Middle Group: Settings (Stacked grid on mobile, horizontal columns on desktop) */}
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full lg:flex lg:flex-row lg:items-center lg:justify-between lg:w-auto lg:gap-6 flex-1 border-t lg:border-t-0 border-navy-100/70 pt-3 lg:pt-0">
+                          {/* Middle Group: Settings (Fluid flexbox wrapping on mobile/tablet, horizontal columns on desktop) */}
+                          <div className="flex flex-wrap gap-4 w-full lg:flex-nowrap lg:flex-row lg:items-center lg:justify-between lg:w-auto lg:gap-6 flex-1 border-t lg:border-t-0 border-navy-100/70 pt-3 lg:pt-0">
                             {/* 3. FILE TYPE (AUTO) */}
-                            <div className="min-w-[110px] select-none">
+                            <div className="flex-1 min-w-[110px] select-none">
                               <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5 select-none">
                                 File Type (Auto)
                               </label>
@@ -523,7 +523,7 @@ export const PdfCompressor: React.FC = () => {
                             </div>
 
                             {/* 4. OPERATION MODE */}
-                            <div className="min-w-[130px]">
+                            <div className="flex-1 min-w-[130px]">
                               <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5 select-none">
                                 Operation Mode
                               </label>
@@ -536,7 +536,7 @@ export const PdfCompressor: React.FC = () => {
                             </div>
 
                             {/* 5. SIZE TARGET */}
-                            <div className="min-w-[210px]">
+                            <div className="flex-1 min-w-[210px]">
                               <div className="flex flex-col gap-1">
                                 <div className="flex justify-between items-center max-w-[195px] select-none">
                                   <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider">

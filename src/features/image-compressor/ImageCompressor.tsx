@@ -520,10 +520,10 @@ export const ImageCompressor: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Middle Group: Settings (Stacked grid on mobile, horizontal columns on desktop) */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full lg:flex lg:flex-row lg:items-center lg:justify-between lg:w-auto lg:gap-6 flex-1 border-t lg:border-t-0 border-navy-100/70 pt-3 lg:pt-0">
+                        {/* Middle Group: Settings (Fluid flexbox wrapping on mobile/tablet, horizontal columns on desktop) */}
+                        <div className="flex flex-wrap gap-4 w-full lg:flex-nowrap lg:flex-row lg:items-center lg:justify-between lg:w-auto lg:gap-6 flex-1 border-t lg:border-t-0 border-navy-100/70 pt-3 lg:pt-0">
                           {/* 3. FILE TYPE (AUTO) */}
-                          <div className="min-w-[110px] select-none">
+                          <div className="flex-1 min-w-[110px] select-none">
                             <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5 select-none">
                               File Type (Auto)
                             </label>
@@ -533,7 +533,7 @@ export const ImageCompressor: React.FC = () => {
                           </div>
 
                           {/* 4. OPERATION MODE */}
-                          <div className="min-w-[130px]">
+                          <div className="flex-1 min-w-[130px]">
                             <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5 select-none">
                               Operation Mode
                             </label>
@@ -546,7 +546,7 @@ export const ImageCompressor: React.FC = () => {
                           </div>
 
                           {/* 5. SIZE TARGET */}
-                          <div className="min-w-[195px]">
+                          <div className="flex-1 min-w-[195px]">
                             <div className="flex flex-col gap-1">
                               <div className="flex justify-between items-center max-w-[185px] select-none">
                                 <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider">
@@ -613,7 +613,7 @@ export const ImageCompressor: React.FC = () => {
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-1.5 text-xs font-semibold text-navy-700 bg-white border border-navy-200 rounded-lg px-2 py-0.5 max-w-[185px]">
-                                  <span className="text-[10px] text-navy-450 font-bold select-none px-0.5">Under</span>
+                                  <span className="text-[10px] text-navy-455 font-bold select-none px-0.5">Under</span>
                                   <input
                                     type="number"
                                     value={item.maxSizeKB}
@@ -622,14 +622,14 @@ export const ImageCompressor: React.FC = () => {
                                     className="w-14 px-1 py-0.5 text-center focus:outline-none font-bold text-brand-700 text-[11px]"
                                     placeholder="Limit"
                                   />
-                                  <span className="text-[10px] text-navy-450 uppercase font-bold select-none ml-auto pr-0.5">KB</span>
+                                  <span className="text-[10px] text-navy-455 uppercase font-bold select-none ml-auto pr-0.5">KB</span>
                                 </div>
                               )}
                             </div>
                           </div>
 
                           {/* 6. FORMAT */}
-                          <div className="min-w-[80px]">
+                          <div className="flex-1 min-w-[80px]">
                             <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5 select-none">
                               Format
                             </label>
@@ -671,10 +671,11 @@ export const ImageCompressor: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => triggerSingleDownload(item.id)}
-                              className="p-1.5 text-brand-600 hover:bg-brand-50 border border-brand-100 rounded transition-all cursor-pointer active:scale-95"
+                              className="px-3 py-1.5 text-xs text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition-all cursor-pointer active:scale-95 font-bold flex items-center justify-center gap-1.5 w-full lg:w-auto mt-2 lg:mt-0"
                               title="Download compressed image"
                             >
                               <Download className="h-3.5 w-3.5" />
+                              <span>Download</span>
                             </button>
                           )}
 
@@ -760,15 +761,38 @@ export const ImageCompressor: React.FC = () => {
                       <span className="font-bold text-brand-700">{formatBytes(zipBlob.size)}</span>
                     </div>
 
-                    <Button
-                      variant="primary"
-                      size="lg"
-                      className="w-full flex items-center justify-center gap-2 text-sm font-bold"
-                      onClick={triggerZipDownload}
-                    >
-                      <Download className="h-4 w-4" />
-                      Download ZIP Package
-                    </Button>
+                    {queue.length === 1 ? (
+                      <div className="flex flex-col gap-2.5">
+                        <Button
+                          variant="primary"
+                          size="lg"
+                          className="w-full flex items-center justify-center gap-2 text-sm font-bold shadow-md"
+                          onClick={() => triggerSingleDownload(queue[0].id)}
+                        >
+                          <Download className="h-4 w-4" />
+                          Download File
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="md"
+                          className="w-full flex items-center justify-center gap-2 text-sm font-bold bg-white"
+                          onClick={triggerZipDownload}
+                        >
+                          <Download className="h-4 w-4" />
+                          Download as ZIP Archive
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        size="lg"
+                        className="w-full flex items-center justify-center gap-2 text-sm font-bold shadow-md"
+                        onClick={triggerZipDownload}
+                      >
+                        <Download className="h-4 w-4" />
+                        Download ZIP Package
+                      </Button>
+                    )}
                   </div>
                 ) : (
                   <div className="text-center py-10 text-navy-500 border-2 border-dashed border-navy-200 rounded-xl flex flex-col items-center justify-center select-none">

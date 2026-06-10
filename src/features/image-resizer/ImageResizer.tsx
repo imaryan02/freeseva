@@ -560,10 +560,10 @@ export const ImageResizer: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* Middle Group: Settings (Stacked grid on mobile, horizontal columns on desktop) */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full lg:flex lg:flex-row lg:items-center lg:justify-between lg:w-auto lg:gap-6 flex-1 border-t lg:border-t-0 border-navy-100/70 pt-3 lg:pt-0">
+                        {/* Middle Group: Settings (Fluid flexbox wrapping on mobile/tablet, horizontal columns on desktop) */}
+                        <div className="flex flex-wrap gap-4 w-full lg:flex-nowrap lg:flex-row lg:items-center lg:justify-between lg:w-auto lg:gap-6 flex-1 border-t lg:border-t-0 border-navy-100/70 pt-3 lg:pt-0">
                           {/* 3. File Type Badge */}
-                          <div className="min-w-[80px] select-none">
+                          <div className="flex-1 min-w-[80px] select-none">
                             <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5">
                               Type
                             </label>
@@ -573,7 +573,7 @@ export const ImageResizer: React.FC = () => {
                           </div>
 
                           {/* 4. Operation Mode */}
-                          <div className="min-w-[115px]">
+                          <div className="flex-1 min-w-[115px]">
                             <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5 select-none">
                               Operation Mode
                             </label>
@@ -590,7 +590,7 @@ export const ImageResizer: React.FC = () => {
                           </div>
 
                           {/* 5. Dimensions Target */}
-                          <div className={`min-w-[190px] transition-all duration-200 ${item.operationMode === 'compress' ? 'opacity-30 pointer-events-none select-none' : ''}`}>
+                          <div className={`flex-1 min-w-[190px] transition-all duration-200 ${item.operationMode === 'compress' ? 'opacity-30 pointer-events-none select-none' : ''}`}>
                             <div className="flex flex-col gap-1">
                               <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider select-none">
                                 Dimensions Target
@@ -654,7 +654,7 @@ export const ImageResizer: React.FC = () => {
                           </div>
 
                           {/* 6. File Size Target */}
-                          <div className={`min-w-[185px] transition-all duration-200 ${item.operationMode === 'resize' ? 'opacity-30 pointer-events-none select-none' : ''}`}>
+                          <div className={`flex-1 min-w-[185px] transition-all duration-200 ${item.operationMode === 'resize' ? 'opacity-30 pointer-events-none select-none' : ''}`}>
                             <div className="flex flex-col gap-1">
                               <div className="flex justify-between items-center max-w-[180px] select-none">
                                 <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider">
@@ -737,7 +737,7 @@ export const ImageResizer: React.FC = () => {
                           </div>
 
                           {/* 7. Output Format */}
-                          <div className="min-w-[80px]">
+                          <div className="flex-1 min-w-[80px]">
                             <label className="block text-[9px] font-bold text-navy-400 uppercase tracking-wider mb-1.5 select-none">
                               Format
                             </label>
@@ -779,10 +779,11 @@ export const ImageResizer: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => triggerSingleDownload(item.id)}
-                              className="p-1.5 text-brand-600 hover:bg-brand-50 border border-brand-100 rounded transition-all cursor-pointer active:scale-95"
+                              className="px-3 py-1.5 text-xs text-white bg-brand-600 hover:bg-brand-700 rounded-lg shadow-sm transition-all cursor-pointer active:scale-95 font-bold flex items-center justify-center gap-1.5 w-full lg:w-auto mt-2 lg:mt-0"
                               title="Download resized image"
                             >
                               <Download className="h-3.5 w-3.5" />
+                              <span>Download</span>
                             </button>
                           )}
 
@@ -868,15 +869,38 @@ export const ImageResizer: React.FC = () => {
                     <span className="font-bold text-brand-700">{formatBytes(zipBlob.size)}</span>
                   </div>
 
-                  <Button
-                    variant="primary"
-                    size="lg"
-                    className="w-full flex items-center justify-center gap-2 text-sm font-bold"
-                    onClick={triggerZipDownload}
-                  >
-                    <Download className="h-4 w-4" />
-                    Download ZIP Package
-                  </Button>
+                  {queue.length === 1 ? (
+                    <div className="flex flex-col gap-2.5">
+                      <Button
+                        variant="primary"
+                        size="lg"
+                        className="w-full flex items-center justify-center gap-2 text-sm font-bold shadow-md"
+                        onClick={() => triggerSingleDownload(queue[0].id)}
+                      >
+                        <Download className="h-4 w-4" />
+                        Download File
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="md"
+                        className="w-full flex items-center justify-center gap-2 text-sm font-bold bg-white"
+                        onClick={triggerZipDownload}
+                      >
+                        <Download className="h-4 w-4" />
+                        Download as ZIP Archive
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      className="w-full flex items-center justify-center gap-2 text-sm font-bold shadow-md"
+                      onClick={triggerZipDownload}
+                    >
+                      <Download className="h-4 w-4" />
+                      Download ZIP Package
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-10 text-navy-500 border-2 border-dashed border-navy-200 rounded-xl flex flex-col items-center justify-center select-none">
